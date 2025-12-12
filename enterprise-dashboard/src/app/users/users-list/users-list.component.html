@@ -1,0 +1,39 @@
+<div class="container">
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2 class="card-title" style="margin: 0; border: none;">Users Management</h2>
+      <button routerLink="/users/add" class="btn btn-primary">+ Add New User</button>
+    </div>
+    
+    <div *ngIf="items && items.length > 0; else emptyState">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of items">
+            <td>{{item.id}}</td>
+            <td>{{item.name}}</td>
+            <td>{{item.email || 'N/A'}}</td>
+            <td>
+              <button class="btn btn-secondary" routerLink="/users/edit/{{item.id}}" style="margin-right: 10px; padding: 6px 12px;">Edit</button>
+              <button class="btn btn-danger" (click)="delete(item.id)" style="padding: 6px 12px;">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <ng-template #emptyState>
+      <div class="empty-state">
+        <h3>No Users Found</h3>
+        <p>Get started by adding your first user</p>
+      </div>
+    </ng-template>
+  </div>
+</div>

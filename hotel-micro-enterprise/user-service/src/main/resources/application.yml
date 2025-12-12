@@ -1,0 +1,20 @@
+server:
+  port: 8091
+
+spring:
+  application:
+    name: USER-SERVICE
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/hotel_users
+      auto-index-creation: true
+
+jwt:
+  secret: myUltraSecretKeyForJWTGeneration12345
+  expiration: 3600000 # 1 hour
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/

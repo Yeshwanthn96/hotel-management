@@ -1,0 +1,27 @@
+server:
+  port: 8094
+
+spring:
+  application:
+    name: PAYMENT-SERVICE
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/hotel_payments
+      auto-index-creation: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+
+# Stripe Configuration
+stripe:
+  api:
+    # Use test key for development (replace with real key in production)
+    # Get your keys from: https://dashboard.stripe.com/test/apikeys
+    key: ${STRIPE_API_KEY:sk_test_demo_key_for_testing}
+  publishable:
+    key: ${STRIPE_PUBLISHABLE_KEY:pk_test_demo_key_for_testing}

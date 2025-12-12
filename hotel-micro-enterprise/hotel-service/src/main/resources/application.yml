@@ -1,0 +1,20 @@
+server:
+  port: 8092
+
+spring:
+  application:
+    name: HOTEL-SERVICE
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/hotel_catalog
+      auto-index-creation: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+jwt:
+  secret: mySecretKey12345678901234567890
+  expiration: 3600000

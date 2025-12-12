@@ -1,0 +1,66 @@
+<div class="container">
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <div>
+        <h2 class="card-title" style="margin: 0; border: none;">
+          {{ authService.isAdmin() ? 'All Reviews Management' : 'My Reviews' }}
+        </h2>
+        <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">
+          {{ authService.isAdmin() ? 'Moderate and manage all customer reviews' : 'Reviews you have written for hotels' }}
+        </p>
+      </div>
+      <button *ngIf="!authService.isAdmin()" routerLink="/reviews/add" class="btn btn-primary">+ Add Review</button>
+    </div>
+    
+    <div *ngIf="reviews && reviews.length > 0; else emptyState">
+      <table>
+        <thead>
+          <tr>
+            <th>Review ID</th>
+            <th *ngIf="authService.isAdmin()">User ID</th>
+            <th>Hotel ID</th>
+            <th>Rating</th>
+            <th>Title</th>
+            <th>Comment</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let review of reviews">
+            <td>{{review.id}}</td>
+            <td *ngIf="authService.isAdmin()"><strong>{{review.userId}}</strong></td>
+            <td>{{review.hotelId}}</td>
+            <td>{{getStars(review.rating)}} ({{review.rating}}/5)</td>
+            <td>{{review.title}}</td>
+            <td>{{review.comment}}</td>
+            <td>
+              <span *ngIf="review.verified" style="background: #28a745; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">✓ Verified</span>
+              <span *ngIf="!review.verified" style="background: #6c757d; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Unverified</span>
+            </td>
+            <td>{{review.createdAt | date:'short'}}</td>
+            <td>
+              <!-- Admin: Approve/Reject actions -->
+              <div *ngIf="authService.isAdmin()" style="display: flex; gap: 5px;">
+                <button *ngIf="!review.verified" (click)="approveReview(review)" class="btn btn-success" style="padding: 6px 12px; font-size: 12px;">✓ Approve</button>
+                <button *ngIf="review.verified" (click)="rejectReview(review)" class="btn btn-warning" style="padding: 6px 12px; font-size: 12px;">✗ Reject</button>
+                <button (click)="deleteReview(review)" class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;">Delete</button>
+              </div>
+              <!-- User: Delete own review only -->
+              <button *ngIf="!authService.isAdmin()" (click)="deleteReview(review)" class="btn btn-danger" style="padding: 6px 12px;">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <ng-template #emptyState>
+      <div class="empty-state">
+        <h3>{{ authService.isAdmin() ? 'No Reviews in System' : 'No Reviews Yet' }}</h3>
+        <p *ngIf="authService.isAdmin()">No customer reviews have been submitted yet</p>
+        <p *ngIf="!authService.isAdmin()">You haven't written any reviews yet. Share your experience after your stays!</p>
+      </div>
+    </ng-template>
+  </div>
+</div>

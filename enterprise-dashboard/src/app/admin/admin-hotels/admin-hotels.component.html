@@ -1,0 +1,144 @@
+<div class="admin-hotels">
+  <div class="page-header">
+    <div>
+      <h1>Hotel Management</h1>
+      <p>Manage your hotel properties</p>
+    </div>
+    <button class="btn btn-primary" (click)="openAddModal()">
+      <span>➕</span> Add New Hotel
+    </button>
+  </div>
+
+  <!-- Hotels Grid -->
+  <div *ngIf="!isLoading && hotels.length > 0" class="hotels-grid">
+    <div *ngFor="let hotel of hotels" class="hotel-card">
+      <div class="hotel-image">
+        <img [src]="hotel.images && hotel.images.length > 0 ? hotel.images[0] : 'https://via.placeholder.com/400x250?text=Hotel+Image'" 
+             [alt]="hotel.name">
+        <div class="hotel-rating">⭐ {{ hotel.rating || '4.0' }}</div>
+      </div>
+      <div class="hotel-content">
+        <h3>{{ hotel.name }}</h3>
+        <p class="hotel-location">📍 {{ hotel.city }}, {{ hotel.state }}</p>
+        <p class="hotel-description">{{ hotel.description || 'No description available' }}</p>
+        
+        <div class="hotel-amenities" *ngIf="hotel.amenities && hotel.amenities.length > 0">
+          <span *ngFor="let amenity of hotel.amenities.slice(0, 3)" class="amenity-tag">
+            {{ amenity }}
+          </span>
+          <span *ngIf="hotel.amenities.length > 3" class="amenity-tag more">
+            +{{ hotel.amenities.length - 3 }} more
+          </span>
+        </div>
+
+        <div class="hotel-actions">
+          <button class="btn-icon" (click)="openEditModal(hotel)" title="Edit">
+            ✏️
+          </button>
+          <button class="btn-icon danger" (click)="deleteHotel(hotel)" title="Delete">
+            🗑️
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    <div class="spinner"></div>
+    <p>Loading hotels...</p>
+  </div>
+
+  <div *ngIf="!isLoading && hotels.length === 0" class="empty-state">
+    <div class="empty-icon">🏨</div>
+    <h3>No Hotels Yet</h3>
+    <p>Start by adding your first hotel property</p>
+    <button class="btn btn-primary" (click)="openAddModal()">
+      Add Hotel
+    </button>
+  </div>
+</div>
+
+<!-- Add Hotel Modal -->
+<div *ngIf="showAddModal" class="modal-overlay" (click)="closeAddModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Add New Hotel</h2>
+      <button class="close-btn" (click)="closeAddModal()">&times;</button>
+    </div>
+
+    <form (ngSubmit)="addHotel()">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="name">Hotel Name *</label>
+          <input type="text" id="name" [(ngModel)]="newHotel.name" name="name" 
+                 placeholder="Grand Plaza Hotel" required>
+        </div>
+
+        <div class="form-group">
+          <label for="city">City *</label>
+          <input type="text" id="city" [(ngModel)]="newHotel.city" name="city" 
+                 placeholder="New York" required>
+        </div>
+
+        <div class="form-group">
+          <label for="state">State *</label>
+          <input type="text" id="state" [(ngModel)]="newHotel.state" name="state" 
+                 placeholder="NY" required>
+        </div>
+
+        <div class="form-group">
+          <label for="zipCode">Zip Code</label>
+          <input type="text" id="zipCode" [(ngModel)]="newHotel.zipCode" name="zipCode" 
+                 placeholder="10001">
+        </div>
+
+        <div class="form-group full-width">
+          <label for="address">Address *</label>
+          <input type="text" id="address" [(ngModel)]="newHotel.address" name="address" 
+                 placeholder="123 Main Street" required>
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Phone</label>
+          <input type="tel" id="phone" [(ngModel)]="newHotel.phone" name="phone" 
+                 placeholder="+1 (555) 123-4567">
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" [(ngModel)]="newHotel.email" name="email" 
+                 placeholder="info@hotel.com">
+        </div>
+
+        <div class="form-group full-width">
+          <label for="description">Description</label>
+          <textarea id="description" [(ngModel)]="newHotel.description" name="description" 
+                    rows="3" placeholder="Enter hotel description..."></textarea>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Amenities</label>
+          <div class="amenities-selector">
+            <button *ngFor="let amenity of availableAmenities" 
+                    type="button"
+                    class="amenity-btn"
+                    [class.selected]="isAmenitySelected(amenity)"
+                    (click)="toggleAmenity(amenity)">
+              {{ amenity }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeAddModal()">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+          <span *ngIf="!isLoading">Add Hotel</span>
+          <span *ngIf="isLoading">Adding...</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

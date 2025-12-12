@@ -1,0 +1,155 @@
+<div class="container">
+  <div class="card">
+    <!-- Back Button -->
+    <button (click)="goBack()" class="btn btn-secondary back-btn">← Back to Hotels</button>
+    
+    <!-- Error Message -->
+    <div *ngIf="error" class="alert alert-error">{{ error }}</div>
+    
+    <!-- Loading State -->
+    <div *ngIf="loading && !hotel" class="loading">Loading hotel details...</div>
+    
+    <!-- Hotel Details -->
+    <div *ngIf="hotel" class="hotel-details">
+      <div class="hotel-hero-image">
+        <img [src]="getHotelHeroImage(hotel)" 
+             [alt]="hotel.name"
+             (error)="$any($event.target).src='https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200&h=600&fit=crop'">
+      </div>
+      
+      <div class="hotel-header">
+        <div>
+          <h1>{{ hotel.name }}</h1>
+          <div class="rating">
+            <span class="stars">{{ '\u2605'.repeat(hotel.starRating) }}{{ '\u2606'.repeat(5 - hotel.starRating) }}</span>
+            <span class="rating-number">{{ hotel.starRating }}/5</span>
+          </div>
+        </div>
+        <button *ngIf="authService.isAdmin()" (click)="manageRooms()" class="btn btn-primary">
+          Manage Rooms
+        </button>
+      </div>
+      
+      <div class="hotel-info-grid">
+        <div class="info-section">
+          <h3>📍 Location</h3>
+          <p>{{ hotel.address }}</p>
+          <p>{{ hotel.city }}, {{ hotel.state }} {{ hotel.zipCode }}</p>
+        </div>
+        
+        <div class="info-section">
+          <h3>📞 Contact</h3>
+          <p>📧 {{ hotel.email }}</p>
+          <p>📱 {{ hotel.phone }}</p>
+        </div>
+        
+        <div class="info-section">
+          <h3>🕐 Check-in/out Times</h3>
+          <p>Check-in: {{ hotel.checkInTime }}</p>
+          <p>Check-out: {{ hotel.checkOutTime }}</p>
+        </div>
+      </div>
+      
+      <div class="description-section">
+        <h3>About This Hotel</h3>
+        <p>{{ hotel.description }}</p>
+      </div>
+      
+      <div class="amenities-section">
+        <h3>🏨 Amenities</h3>
+        <div class="amenities-grid">
+          <span *ngFor="let amenity of hotel.amenities" class="amenity-badge">
+            {{ amenity }}
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Room Search Filters -->
+    <div class="rooms-section">
+      <h2>Available Rooms</h2>
+      
+      <div class="search-section">
+        <button (click)="showRoomFilters = !showRoomFilters" class="btn btn-secondary">
+          {{ showRoomFilters ? 'Hide' : 'Show' }} Room Filters
+        </button>
+        
+        <div *ngIf="showRoomFilters" class="room-filters">
+          <div class="filter-row">
+            <div class="filter-group">
+              <label>Check-in Date</label>
+              <input type="date" [(ngModel)]="searchParams.checkIn" class="form-control">
+            </div>
+            
+            <div class="filter-group">
+              <label>Check-out Date</label>
+              <input type="date" [(ngModel)]="searchParams.checkOut" class="form-control">
+            </div>
+            
+            <div class="filter-group">
+              <label>Capacity (Guests)</label>
+              <input type="number" [(ngModel)]="searchParams.capacity" min="1" placeholder="Number of guests" class="form-control">
+            </div>
+          </div>
+          
+          <div class="filter-actions">
+            <button (click)="searchRooms()" class="btn btn-primary">Search Rooms</button>
+            <button (click)="clearRoomSearch()" class="btn btn-secondary">Clear</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Rooms Grid -->
+      <div *ngIf="rooms.length > 0" class="rooms-grid">
+        <div *ngFor="let room of rooms; let i = index" class="room-card">
+          <div class="room-image">
+            <img [src]="getRoomImageByIndex(room.roomType, i)" 
+                 [alt]="room.roomType"
+                 (error)="$any($event.target).src='https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&h=500&fit=crop'">
+          </div>
+          
+          <div class="room-header">
+            <h3>{{ room.roomType }}</h3>
+            <span class="room-number">Room {{ room.roomNumber }}</span>
+          </div>
+          
+          <p class="room-description">{{ room.description }}</p>
+          
+          <div class="room-info">
+            <span class="capacity">👥 Capacity: {{ room.capacity }} guests</span>
+          </div>
+          
+          <div class="room-amenities">
+            <span *ngFor="let amenity of room.amenities" class="amenity-tag">
+              {{ amenity }}
+            </span>
+          </div>
+          
+          <div class="room-pricing">
+            <div class="price">
+              <span class="price-label">Price per night:</span>
+              <span class="price-value">${{ room.pricePerNight }}</span>
+            </div>
+            <div *ngIf="hasRoomSearchParams() && searchParams.checkIn && searchParams.checkOut" class="total-price">
+              <span class="total-label">Total ({{ calculateNights() }} nights):</span>
+              <span class="total-value">${{ getTotalPrice(room) }}</span>
+            </div>
+          </div>
+          
+          <div class="room-actions">
+            <button (click)="bookRoom(room)" class="btn btn-primary btn-block">
+              Book Now
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- No Rooms -->
+      <div *ngIf="rooms.length === 0 && !loading" class="empty-state">
+        <h3>No Rooms Available</h3>
+        <p *ngIf="hasRoomSearchParams()">Try adjusting your search criteria</p>
+        <p *ngIf="!hasRoomSearchParams()">No rooms are currently available at this hotel</p>
+      </div>
+    </div>
+  </div>
+</div>

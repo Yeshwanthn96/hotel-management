@@ -1,0 +1,52 @@
+<div class="user-payments-container">
+  <div class="page-header">
+    <h1>My Payments</h1>
+    <p>View your payment history and transactions</p>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    <p>Loading your payments...</p>
+  </div>
+
+  <div *ngIf="!isLoading && errorMessage" class="alert alert-error">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="!isLoading && payments.length === 0" class="empty-state">
+    <h3>No Payments Found</h3>
+    <p>You haven't made any payments yet.</p>
+  </div>
+
+  <div *ngIf="!isLoading && payments.length > 0" class="payments-table">
+    <table>
+      <thead>
+        <tr>
+          <th>Payment ID</th>
+          <th>Booking ID</th>
+          <th>Amount</th>
+          <th>Payment Method</th>
+          <th>Status</th>
+          <th>Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let payment of payments">
+          <td>{{ payment.id }}</td>
+          <td>{{ payment.bookingId }}</td>
+          <td class="amount">${{ payment.amount }}</td>
+          <td>{{ payment.paymentMethod }}</td>
+          <td>
+            <span [class]="getStatusClass(payment.status)">{{ payment.status }}</span>
+          </td>
+          <td>{{ payment.createdAt | date: 'MMM d, y h:mm a' }}</td>
+          <td>
+            <button class="btn-icon" (click)="downloadReceipt(payment.id)" title="Download Receipt">
+              📥
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

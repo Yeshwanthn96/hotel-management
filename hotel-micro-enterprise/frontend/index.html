@@ -1,0 +1,17 @@
+
+<!doctype html><html><head><meta charset='utf-8'><title>Hotel Microservices UI</title></head><body>
+<h2>Gateway Test</h2>
+<button onclick="call('/api/users/1')">Get User 1</button>
+<button onclick="call('/api/hotels/100')">Get Hotel 100</button>
+<button onclick="call('/api/bookings/500')">Get Booking 500</button>
+<pre id='out'>--</pre>
+<script>
+async function call(path){
+  try{
+    const res = await fetch('http://localhost:8080'+path);
+    const txt = await res.text();
+    document.getElementById('out').textContent = 'Status: '+res.status+'\n'+txt;
+  }catch(e){ document.getElementById('out').textContent = 'Error: '+e }
+}
+</script>
+</body></html>

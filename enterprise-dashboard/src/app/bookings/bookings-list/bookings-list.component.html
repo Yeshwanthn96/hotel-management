@@ -1,0 +1,74 @@
+<div class="container">
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <div>
+        <h2 class="card-title" style="margin: 0; border: none;">
+          {{ authService.isAdmin() ? 'All Bookings Management' : 'My Bookings' }}
+        </h2>
+        <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">
+          {{ authService.isAdmin() ? 'Manage all customer bookings' : 'View and manage your hotel bookings' }}
+        </p>
+      </div>
+      <button *ngIf="authService.canAdd()" routerLink="/bookings/add" class="btn btn-primary">+ New Booking</button>
+      <span *ngIf="!authService.canAdd()" style="color: #999; font-size: 14px; font-style: italic;">
+        View Only Access
+      </span>
+    </div>
+    
+    <div *ngIf="bookings && bookings.length > 0; else emptyState">
+      <table>
+        <thead>
+          <tr>
+            <th>Booking ID</th>
+            <th *ngIf="authService.isAdmin()">User ID</th>
+            <th>Hotel ID</th>
+            <th>Room ID</th>
+            <th>Check-in</th>
+            <th>Check-out</th>
+            <th>Guests</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th *ngIf="authService.canDelete()">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let booking of bookings">
+            <td>{{booking.id}}</td>
+            <td *ngIf="authService.isAdmin()"><strong>{{booking.userId}}</strong></td>
+            <td>{{booking.hotelId}}</td>
+            <td>{{booking.roomId}}</td>
+            <td>{{booking.checkInDate | date:'short'}}</td>
+            <td>{{booking.checkOutDate | date:'short'}}</td>
+            <td>{{booking.numberOfGuests}}</td>
+            <td>${{booking.totalAmount}}</td>
+            <td>
+              <span [class]="'badge badge-' + getStatusBadgeClass(booking.status || '')">
+                {{booking.status}}
+              </span>
+            </td>
+            <td>{{booking.createdAt | date:'short'}}</td>
+            <td *ngIf="authService.canDelete()">
+              <button 
+                *ngIf="booking.status !== 'CANCELLED' && booking.status !== 'FAILED'"
+                (click)="cancelBooking(booking)" 
+                class="btn btn-danger" 
+                style="padding: 6px 12px;">
+                Cancel
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <ng-template #emptyState>
+      <div class="empty-state">
+        <h3>{{ authService.isAdmin() ? 'No Bookings in System' : 'No Bookings Yet' }}</h3>
+        <p *ngIf="authService.isAdmin()">No customer bookings have been made yet</p>
+        <p *ngIf="!authService.isAdmin() && authService.canAdd()">Ready to book your next stay? Browse our hotels and make a reservation</p>
+        <p *ngIf="!authService.isAdmin() && !authService.canAdd()">You haven't made any bookings yet</p>
+      </div>
+    </ng-template>
+  </div>
+</div>

@@ -1,0 +1,59 @@
+<div class="container">
+  <div class="card">
+    <h2 class="card-title">Create New Booking</h2>
+    <form>
+      <div class="form-group">
+        <label for="hotel">Hotel *</label>
+        <select id="hotel" [(ngModel)]="booking.hotelId" name="hotel" (change)="onHotelChange()" required>
+          <option value="">Select hotel</option>
+          <option *ngFor="let h of hotels" [value]="h.id">{{h.name}}</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="room">Room *</label>
+        <select id="room" [(ngModel)]="booking.roomId" name="room" [disabled]="!booking.hotelId" required>
+          <option value="">Select room</option>
+          <option *ngFor="let r of rooms" [value]="r.id">
+            Room {{r.roomNumber}} - {{r.type}} (${{r.price}}/night)
+          </option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="checkIn">Check-in Date *</label>
+        <input type="date" id="checkIn" [(ngModel)]="booking.checkInDate" name="checkIn" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="checkOut">Check-out Date *</label>
+        <input type="date" id="checkOut" [(ngModel)]="booking.checkOutDate" name="checkOut" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="guests">Number of Guests *</label>
+        <input type="number" id="guests" [(ngModel)]="booking.numberOfGuests" name="guests" min="1" max="10" required>
+      </div>
+      
+      <div class="form-group">
+        <label>Payment Method *</label>
+        <div style="display: flex; gap: 15px; margin-top: 8px;">
+          <label style="cursor: pointer;">
+            <input type="radio" [(ngModel)]="booking.paymentMethod" name="payment" value="STRIPE"> Stripe
+          </label>
+          <label style="cursor: pointer;">
+            <input type="radio" [(ngModel)]="booking.paymentMethod" name="payment" value="PAYPAL"> PayPal
+          </label>
+          <label style="cursor: pointer;">
+            <input type="radio" [(ngModel)]="booking.paymentMethod" name="payment" value="MOCK"> Mock
+          </label>
+        </div>
+      </div>
+      
+      <div class="flex">
+        <button type="button" (click)="createBooking()" class="btn btn-primary">Create Booking</button>
+        <button type="button" routerLink="/bookings" class="btn btn-secondary">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>

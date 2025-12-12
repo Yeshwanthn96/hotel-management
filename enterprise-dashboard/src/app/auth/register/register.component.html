@@ -1,0 +1,130 @@
+<div class="auth-container">
+  <div class="auth-card" style="max-width: 550px;">
+    <button class="close-btn" (click)="close()">&times;</button>
+    
+    <h2 class="auth-title">Create Account</h2>
+    <p class="auth-subtitle">Join us today</p>
+
+    <div *ngIf="errorMessage" class="alert alert-error">
+      {{ errorMessage }}
+    </div>
+
+    <div *ngIf="successMessage" class="alert alert-success">
+      {{ successMessage }}
+    </div>
+
+    <form (ngSubmit)="register()">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="form-group">
+          <label for="firstName">First Name</label>
+          <input 
+            type="text" 
+            id="firstName" 
+            [(ngModel)]="firstName" 
+            name="firstName"
+            placeholder="John"
+            [disabled]="isLoading"
+            required>
+        </div>
+
+        <div class="form-group">
+          <label for="lastName">Last Name</label>
+          <input 
+            type="text" 
+            id="lastName" 
+            [(ngModel)]="lastName" 
+            name="lastName"
+            placeholder="Doe"
+            [disabled]="isLoading"
+            required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input 
+          type="email" 
+          id="email" 
+          [(ngModel)]="email" 
+          name="email"
+          placeholder="your.email@example.com"
+          [disabled]="isLoading"
+          required>
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Phone Number</label>
+        <input 
+          type="tel" 
+          id="phone" 
+          [(ngModel)]="phone" 
+          name="phone"
+          placeholder="+1 (555) 123-4567"
+          [disabled]="isLoading"
+          required>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="password-input-wrapper">
+          <input 
+            [type]="showPassword ? 'text' : 'password'" 
+            id="password" 
+            [(ngModel)]="password" 
+            name="password"
+            (input)="onPasswordChange()"
+            placeholder="Create a strong password"
+            [disabled]="isLoading"
+            required>
+          <button type="button" class="toggle-password" (click)="togglePasswordVisibility()">
+            <span *ngIf="!showPassword">👁️</span>
+            <span *ngIf="showPassword">🙈</span>
+          </button>
+        </div>
+        
+        <!-- Password Strength Indicator -->
+        <div *ngIf="password" class="password-strength">
+          <div class="strength-bar">
+            <div class="strength-fill" 
+                 [style.width.%]="passwordStrength.percentage"
+                 [style.background-color]="passwordStrength.color"></div>
+          </div>
+          <span [style.color]="passwordStrength.color">{{ passwordStrength.strength }}</span>
+        </div>
+
+        <!-- Password Requirements -->
+        <ul *ngIf="password && passwordErrors.length > 0" class="password-errors">
+          <li *ngFor="let error of passwordErrors">{{ error }}</li>
+        </ul>
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <div class="password-input-wrapper">
+          <input 
+            [type]="showConfirmPassword ? 'text' : 'password'" 
+            id="confirmPassword" 
+            [(ngModel)]="confirmPassword" 
+            name="confirmPassword"
+            placeholder="Confirm your password"
+            [disabled]="isLoading"
+            required>
+          <button type="button" class="toggle-password" (click)="toggleConfirmPasswordVisibility()">
+            <span *ngIf="!showConfirmPassword">👁️</span>
+            <span *ngIf="showConfirmPassword">🙈</span>
+          </button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" [disabled]="isLoading || !firstName || !lastName || !email || !phone || !password || !confirmPassword">
+        <span *ngIf="!isLoading">Create Account</span>
+        <span *ngIf="isLoading">Creating Account...</span>
+      </button>
+
+      <div class="auth-links">
+        <span style="color: #6b7280;">Already have an account? </span>
+        <a routerLink="/auth/login">Sign In</a>
+      </div>
+    </form>
+  </div>
+</div>

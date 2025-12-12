@@ -1,0 +1,28 @@
+<div class="container">
+  <div class="card">
+    <h2 class="card-title">Edit User</h2>
+    <form>
+      <div class="form-group">
+        <label for="editName">Full Name</label>
+        <input type="text" id="editName" [(ngModel)]="model.name" name="name" placeholder="Enter full name" required>
+      </div>
+      <div class="form-group">
+        <label for="editEmail">Email Address</label>
+        <input type="email" id="editEmail" [(ngModel)]="model.email" name="email" placeholder="Enter email address">
+      </div>
+      <div class="form-group">
+        <label for="editRole">Role</label>
+        <select id="editRole" [(ngModel)]="model.role" name="role">
+          <option value="">Select role</option>
+          <option value="admin">Admin</option>
+          <option value="user">User</option>
+          <option value="manager">Manager</option>
+        </select>
+      </div>
+      <div class="flex">
+        <button type="button" (click)="save()" class="btn btn-primary">Save Changes</button>
+        <button type="button" routerLink="/users" class="btn btn-secondary">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,1 @@
+Shared DTOs and utilities placeholder. Add shared classes here when needed.

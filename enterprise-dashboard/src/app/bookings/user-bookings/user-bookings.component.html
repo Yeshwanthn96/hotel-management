@@ -1,0 +1,68 @@
+<div class="user-bookings-container">
+  <div class="page-header">
+    <h1>My Bookings</h1>
+    <p>View and manage your hotel reservations</p>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    <p>Loading your bookings...</p>
+  </div>
+
+  <div *ngIf="!isLoading && errorMessage" class="alert alert-error">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="!isLoading && bookings.length === 0" class="empty-state">
+    <h3>No Bookings Found</h3>
+    <p>You haven't made any reservations yet.</p>
+    <button class="btn btn-primary" routerLink="/hotels">Browse Hotels</button>
+  </div>
+
+  <div *ngIf="!isLoading && bookings.length > 0" class="bookings-grid">
+    <div *ngFor="let booking of bookings" class="booking-card">
+      <div class="booking-header">
+        <h3>{{ booking.hotelName }}</h3>
+        <span [class]="getStatusClass(booking.status)">{{ booking.status }}</span>
+      </div>
+      
+      <div class="booking-details">
+        <div class="detail-row">
+          <span class="label">Booking ID:</span>
+          <span class="value">{{ booking.id }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Room:</span>
+          <span class="value">{{ booking.roomType }} - Room {{ booking.roomNumber }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Check-in:</span>
+          <span class="value">{{ booking.checkInDate | date: 'MMM d, y' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Check-out:</span>
+          <span class="value">{{ booking.checkOutDate | date: 'MMM d, y' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Guests:</span>
+          <span class="value">{{ booking.numberOfGuests }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Total Amount:</span>
+          <span class="value price">${{ booking.totalAmount }}</span>
+        </div>
+      </div>
+
+      <div class="booking-actions">
+        <button class="btn btn-secondary" [routerLink]="['/bookings/details', booking.id]">
+          View Details
+        </button>
+        <button 
+          *ngIf="booking.status === 'CONFIRMED' || booking.status === 'PENDING'" 
+          class="btn btn-danger" 
+          (click)="cancelBooking(booking.id)">
+          Cancel Booking
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

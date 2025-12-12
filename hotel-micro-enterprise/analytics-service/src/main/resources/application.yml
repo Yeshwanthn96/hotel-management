@@ -1,0 +1,16 @@
+server:
+  port: 8097
+
+spring:
+  application:
+    name: ANALYTICS-SERVICE
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/hotel_analytics
+      auto-index-creation: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/

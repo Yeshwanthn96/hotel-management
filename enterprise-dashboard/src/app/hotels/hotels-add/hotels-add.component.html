@@ -1,0 +1,151 @@
+<div class="container">
+  <div class="card">
+    <h2 class="card-title">{{ isEditMode ? 'Edit Hotel' : 'Add New Hotel' }}</h2>
+    
+    <!-- Error Message -->
+    <div *ngIf="error" class="alert alert-error">{{ error }}</div>
+    
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading">{{ isEditMode ? 'Loading hotel...' : 'Saving hotel...' }}</div>
+    
+    <form *ngIf="!loading">
+      <!-- Basic Information -->
+      <div class="form-section">
+        <h3>Basic Information</h3>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="name">Hotel Name *</label>
+            <input type="text" id="name" [(ngModel)]="hotel.name" name="name" 
+                   placeholder="Enter hotel name" required class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label for="starRating">Star Rating *</label>
+            <select id="starRating" [(ngModel)]="hotel.starRating" name="starRating" class="form-control">
+              <option [value]="1">1 Star</option>
+              <option [value]="2">2 Stars</option>
+              <option [value]="3">3 Stars</option>
+              <option [value]="4">4 Stars</option>
+              <option [value]="5">5 Stars</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea id="description" [(ngModel)]="hotel.description" name="description" 
+                    rows="4" placeholder="Enter hotel description" class="form-control"></textarea>
+        </div>
+      </div>
+      
+      <!-- Location Information -->
+      <div class="form-section">
+        <h3>Location</h3>
+        
+        <div class="form-group">
+          <label for="address">Address *</label>
+          <input type="text" id="address" [(ngModel)]="hotel.address" name="address" 
+                 placeholder="Street address" required class="form-control">
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="city">City *</label>
+            <input type="text" id="city" [(ngModel)]="hotel.city" name="city" 
+                   placeholder="City" required class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label for="state">State *</label>
+            <input type="text" id="state" [(ngModel)]="hotel.state" name="state" 
+                   placeholder="State" required class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label for="zipCode">Zip Code</label>
+            <input type="text" id="zipCode" [(ngModel)]="hotel.zipCode" name="zipCode" 
+                   placeholder="Zip code" class="form-control">
+          </div>
+        </div>
+      </div>
+      
+      <!-- Contact Information -->
+      <div class="form-section">
+        <h3>Contact Information</h3>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="email">Email *</label>
+            <input type="email" id="email" [(ngModel)]="hotel.email" name="email" 
+                   placeholder="hotel@example.com" required class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label for="phone">Phone *</label>
+            <input type="tel" id="phone" [(ngModel)]="hotel.phone" name="phone" 
+                   placeholder="(555) 123-4567" required class="form-control">
+          </div>
+        </div>
+      </div>
+      
+      <!-- Check-in/out Times -->
+      <div class="form-section">
+        <h3>Check-in/out Information</h3>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="checkInTime">Check-in Time</label>
+            <input type="time" id="checkInTime" [(ngModel)]="hotel.checkInTime" 
+                   name="checkInTime" class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label for="checkOutTime">Check-out Time</label>
+            <input type="time" id="checkOutTime" [(ngModel)]="hotel.checkOutTime" 
+                   name="checkOutTime" class="form-control">
+          </div>
+        </div>
+      </div>
+      
+      <!-- Amenities -->
+      <div class="form-section">
+        <h3>Amenities</h3>
+        
+        <div class="amenities-input">
+          <input type="text" [(ngModel)]="amenityInput" name="amenityInput" 
+                 placeholder="Add amenity (e.g., Free WiFi, Pool, Gym)" 
+                 class="form-control" (keyup.enter)="addAmenity()">
+          <button type="button" (click)="addAmenity()" class="btn btn-secondary">Add</button>
+        </div>
+        
+        <div *ngIf="hotel.amenities && hotel.amenities.length > 0" class="amenities-list">
+          <span *ngFor="let amenity of hotel.amenities" class="amenity-tag">
+            {{ amenity }}
+            <button type="button" (click)="removeAmenity(amenity)" class="remove-btn">×</button>
+          </span>
+        </div>
+      </div>
+      
+      <!-- Status -->
+      <div class="form-section" *ngIf="isEditMode">
+        <h3>Status</h3>
+        
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="hotel.active" name="active">
+            Active
+          </label>
+        </div>
+      </div>
+      
+      <!-- Actions -->
+      <div class="form-actions">
+        <button type="button" (click)="save()" class="btn btn-primary" [disabled]="loading">
+          {{ isEditMode ? 'Update Hotel' : 'Create Hotel' }}
+        </button>
+        <button type="button" (click)="cancel()" class="btn btn-secondary">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,124 @@
+<div class="container">
+  <div class="card">
+    <div class="header">
+      <h2 class="card-title">Hotels Management</h2>
+      <button *ngIf="authService.isAdmin()" routerLink="/hotels/add" class="btn btn-primary">+ Add Hotel</button>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="error" class="alert alert-error">{{ error }}</div>
+
+    <!-- Search Filters -->
+    <div class="search-section">
+      <button (click)="showSearchFilters = !showSearchFilters" class="btn btn-secondary">
+        {{ showSearchFilters ? 'Hide' : 'Show' }} Search Filters
+      </button>
+      
+      <div *ngIf="showSearchFilters" class="search-filters">
+        <div class="filter-row">
+          <div class="filter-group">
+            <label>City</label>
+            <input type="text" [(ngModel)]="searchParams.city" placeholder="Enter city" class="form-control">
+          </div>
+          
+          <div class="filter-group">
+            <label>Check-in Date</label>
+            <input type="date" [(ngModel)]="searchParams.checkInDate" class="form-control">
+          </div>
+          
+          <div class="filter-group">
+            <label>Check-out Date</label>
+            <input type="date" [(ngModel)]="searchParams.checkOutDate" class="form-control">
+          </div>
+          
+          <div class="filter-group">
+            <label>Guests</label>
+            <input type="number" [(ngModel)]="searchParams.numberOfGuests" min="1" placeholder="Number of guests" class="form-control">
+          </div>
+        </div>
+        
+        <div class="filter-row">
+          <div class="filter-group">
+            <label>Min Price (per night)</label>
+            <input type="number" [(ngModel)]="searchParams.minPrice" min="0" placeholder="Min price" class="form-control">
+          </div>
+          
+          <div class="filter-group">
+            <label>Max Price (per night)</label>
+            <input type="number" [(ngModel)]="searchParams.maxPrice" min="0" placeholder="Max price" class="form-control">
+          </div>
+          
+          <div class="filter-group">
+            <label>Min Rating</label>
+            <input type="number" [(ngModel)]="searchParams.minRating" min="1" max="5" placeholder="Min rating" class="form-control">
+          </div>
+        </div>
+        
+        <div class="filter-actions">
+          <button (click)="searchHotels()" class="btn btn-primary">Search</button>
+          <button (click)="clearSearch()" class="btn btn-secondary">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading">Loading hotels...</div>
+
+    <!-- Hotels List -->
+    <div *ngIf="!loading && filteredHotels.length > 0" class="hotels-grid">
+      <div *ngFor="let hotel of filteredHotels; let i = index" class="hotel-card">
+        <div class="hotel-image">
+          <img [src]="getHotelImage(hotel, i)" 
+               [alt]="hotel.name" 
+               (error)="$any($event.target).src='https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=500&fit=crop'">
+          <div class="image-overlay">
+            <div class="rating">
+              <span class="stars">{{ '★'.repeat(hotel.starRating) }}{{ '☆'.repeat(5 - hotel.starRating) }}</span>
+              <span class="rating-number">{{ hotel.starRating }}/5</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="hotel-header">
+          <h3>{{ hotel.name }}</h3>
+        </div>
+        
+        <div class="hotel-details">
+          <p><strong>📍 Location:</strong> {{ hotel.city }}, {{ hotel.state }}</p>
+          <p><strong>📧 Email:</strong> {{ hotel.email }}</p>
+          <p><strong>📞 Phone:</strong> {{ hotel.phone }}</p>
+          <p class="description">{{ hotel.description }}</p>
+          
+          <div class="amenities">
+            <span *ngFor="let amenity of hotel.amenities" class="amenity-badge">{{ amenity }}</span>
+          </div>
+          
+          <div class="hotel-info">
+            <span>Check-in: {{ hotel.checkInTime }}</span>
+            <span>Check-out: {{ hotel.checkOutTime }}</span>
+            <span *ngIf="authService.isAdmin()" [class.active]="hotel.active" [class.inactive]="!hotel.active">
+              {{ hotel.active ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+        </div>
+        
+        <div class="hotel-actions">
+          <button (click)="viewDetails(hotel.id)" class="btn btn-primary">View Rooms</button>
+          <button *ngIf="authService.isAdmin()" (click)="editHotel(hotel.id)" class="btn btn-secondary">Edit</button>
+          <button *ngIf="authService.isAdmin()" (click)="toggleActive(hotel)" class="btn btn-warning">
+            {{ hotel.active ? 'Deactivate' : 'Activate' }}
+          </button>
+          <button *ngIf="authService.isAdmin()" (click)="deleteHotel(hotel)" class="btn btn-danger">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && filteredHotels.length === 0" class="empty-state">
+      <h3>No Hotels Found</h3>
+      <p *ngIf="hasSearchParams()">Try adjusting your search filters</p>
+      <p *ngIf="!hasSearchParams() && authService.isAdmin()">Get started by adding your first hotel</p>
+      <p *ngIf="!hasSearchParams() && !authService.isAdmin()">No hotels available at the moment</p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,335 @@
+<div class="container">
+  <div class="card">
+    <h2 class="card-title">🔒 Secure Payment</h2>
+    <p style="color: #666; margin-bottom: 20px;">
+      <span style="color: #28a745;">✓</span> Powered by Stripe • PCI DSS Compliant • SSL Encrypted
+    </p>
+    
+    <form>
+      <div class="form-group">
+        <label for="bookingRef">Booking ID *</label>
+        <input type="text" id="bookingRef" [(ngModel)]="payment.bookingId" name="bookingId" 
+               placeholder="Enter booking ID" required>
+      </div>
+
+      <div class="form-group">
+        <label for="amount">Amount to Pay *</label>
+        <div style="position: relative;">
+          <span style="position: absolute; left: 12px; top: 11px; font-weight: 600; color: #333;">$</span>
+          <input type="number" id="amount" [(ngModel)]="payment.amount" name="amount" 
+                 placeholder="0.00" step="0.01" required
+                 style="padding-left: 28px; font-size: 18px; font-weight: 600;">
+        </div>
+      </div>
+
+      <!-- Payment Method Selection -->
+      <div class="form-group">
+        <label>Select Payment Method *</label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px;">
+          <label class="payment-method-card" [class.selected]="payment.paymentMethod === 'STRIPE'">
+            <input type="radio" [(ngModel)]="payment.paymentMethod" name="method" value="STRIPE" style="display: none;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <svg width="40" height="26" viewBox="0 0 60 25" fill="none">
+                <rect width="60" height="25" rx="4" fill="#635BFF"/>
+                <path d="M13 8.5C13 7.4 13.9 6.5 15 6.5H18C19.1 6.5 20 7.4 20 8.5V16.5C20 17.6 19.1 18.5 18 18.5H15C13.9 18.5 13 17.6 13 16.5V8.5Z" fill="white"/>
+              </svg>
+              <div>
+                <div style="font-weight: 600; font-size: 14px;">Credit/Debit Card</div>
+                <div style="font-size: 11px; color: #666;">Visa, Mastercard, Amex</div>
+              </div>
+            </div>
+          </label>
+
+          <label class="payment-method-card" [class.selected]="payment.paymentMethod === 'PAYPAL'">
+            <input type="radio" [(ngModel)]="payment.paymentMethod" name="method" value="PAYPAL" style="display: none;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <svg width="40" height="26" viewBox="0 0 60 25" fill="none">
+                <rect width="60" height="25" rx="4" fill="#0070BA"/>
+                <text x="10" y="17" fill="white" font-size="12" font-weight="bold">PayPal</text>
+              </svg>
+              <div>
+                <div style="font-weight: 600; font-size: 14px;">PayPal</div>
+                <div style="font-size: 11px; color: #666;">Safe & Secure</div>
+              </div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Card Details (shown when Stripe selected) -->
+      <div *ngIf="payment.paymentMethod === 'STRIPE'" style="margin-top: 24px; padding: 20px; background: #f7fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+        <h3 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600;">Card Information</h3>
+        
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label for="cardNumber">Card Number *</label>
+          <div style="position: relative;">
+            <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" 
+                   [(ngModel)]="cardDetails.cardNumber"
+                   (input)="formatCardNumber($event)"
+                   name="cardNumber"
+                   maxlength="19" style="padding-right: 100px;" required>
+            <div style="position: absolute; right: 12px; top: 10px; display: flex; gap: 6px;">
+              <img src="data:image/svg+xml,%3Csvg width='32' height='20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='32' height='20' rx='2' fill='%231434CB'/%3E%3Crect x='12' y='5' width='8' height='10' rx='4' fill='%23EB001B'/%3E%3C/svg%3E" alt="Mastercard">
+              <img src="data:image/svg+xml,%3Csvg width='32' height='20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='32' height='20' rx='2' fill='%231A1F71'/%3E%3Cpath d='M10 6h4l-2 8h-4l2-8z' fill='%23F7B600'/%3E%3C/svg%3E" alt="Visa">
+            </div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="expiry">Expiry Date *</label>
+            <input type="text" id="expiry" placeholder="MM / YY" 
+                   [(ngModel)]="cardDetails.expiryDate"
+                   (input)="formatExpiryDate($event)"
+                   name="expiryDate"
+                   maxlength="7" required>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="cvc">CVC *</label>
+            <input type="text" id="cvc" placeholder="123" 
+                   [(ngModel)]="cardDetails.cvc"
+                   (input)="formatCVC($event)"
+                   name="cvc"
+                   maxlength="4" required>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 12px; margin-bottom: 0;">
+          <label for="cardName">Cardholder Name *</label>
+          <input type="text" id="cardName" placeholder="John Doe"
+                 [(ngModel)]="cardDetails.cardholderName"
+                 name="cardholderName" required>
+        </div>
+      </div>
+
+      <!-- PayPal Info -->
+      <div *ngIf="payment.paymentMethod === 'PAYPAL'" style="margin-top: 24px; padding: 20px; background: #f7fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+        <p style="margin: 0; color: #666; font-size: 14px;">
+          <span style="color: #0070BA; font-weight: 600;">ℹ️ PayPal Payment</span><br>
+          You will be redirected to PayPal to complete your payment securely.
+        </p>
+      </div>
+
+      <!-- Security Notice -->
+      <div style="margin-top: 20px; padding: 12px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 6px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 20px;">🔒</span>
+          <div style="font-size: 13px; color: #166534;">
+            <strong>Your payment is secure</strong><br>
+            Your card details are encrypted and never stored on our servers
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex" style="margin-top: 24px;">
+        <button type="button" (click)="save()" class="btn btn-primary" 
+                [disabled]="!isFormValid() || isProcessing"
+                [style.opacity]="(!isFormValid() || isProcessing) ? '0.6' : '1'"
+                [style.cursor]="(!isFormValid() || isProcessing) ? 'not-allowed' : 'pointer'"
+                style="font-size: 16px; padding: 12px 32px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+          <span *ngIf="!isProcessing">💳 Pay ${{payment.amount || '0.00'}}</span>
+          <span *ngIf="isProcessing">⏳ Processing...</span>
+        </button>
+        <button type="button" routerLink="/payments" class="btn btn-secondary" [disabled]="isProcessing">
+          Cancel
+        </button>
+      </div>
+
+      <p style="text-align: center; margin-top: 16px; font-size: 12px; color: #999;">
+        By confirming your payment, you agree to our <a href="#" style="color: #667eea;">Terms of Service</a>
+      </p>
+    </form>
+  </div>
+</div>
+
+<!-- Payment Processing Modal -->
+<div *ngIf="showPaymentModal" class="payment-modal-overlay" (click)="closeModal()">
+  <div class="payment-modal-content" (click)="$event.stopPropagation()">
+    
+    <!-- Loading State -->
+    <div *ngIf="isProcessing && !paymentSuccess && !paymentError" class="modal-state">
+      <div class="spinner"></div>
+      <h3 style="margin-top: 24px; color: #333;">Processing Your Payment</h3>
+      <p style="color: #666; font-size: 14px;">
+        <span *ngIf="payment.paymentMethod === 'STRIPE'">Securely processing with Stripe...</span>
+        <span *ngIf="payment.paymentMethod === 'PAYPAL'">Redirecting to PayPal...</span>
+      </p>
+    </div>
+
+    <!-- Success State -->
+    <div *ngIf="paymentSuccess" class="modal-state">
+      <div class="success-icon">✓</div>
+      <h3 style="margin-top: 24px; color: #10b981;">Payment Successful!</h3>
+      <p style="color: #666; font-size: 14px; margin-top: 12px;">
+        Your payment has been processed successfully
+      </p>
+      <div style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 12px; margin-top: 16px;">
+        <p style="margin: 0; font-size: 13px; color: #166534;">
+          <strong>Transaction ID:</strong><br>
+          <code style="font-size: 12px;">{{transactionId}}</code>
+        </p>
+      </div>
+      <button (click)="closeModal()" class="modal-button" style="margin-top: 24px; background: #10b981;">
+        Continue
+      </button>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="paymentError" class="modal-state">
+      <div class="error-icon">✕</div>
+      <h3 style="margin-top: 24px; color: #ef4444;">Payment Failed</h3>
+      <p style="color: #666; font-size: 14px; margin-top: 12px;">
+        {{paymentError}}
+      </p>
+      <div style="display: flex; gap: 12px; margin-top: 24px;">
+        <button (click)="retryPayment()" class="modal-button" style="background: #667eea;">
+          Try Again
+        </button>
+        <button (click)="closeModal()" class="modal-button" style="background: #6b7280;">
+          Cancel
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+  .payment-method-card {
+    padding: 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: white;
+  }
+
+  .payment-method-card:hover {
+    border-color: #cbd5e0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+
+  .payment-method-card.selected {
+    border-color: #667eea;
+    background: #f7fafc;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  /* Payment Modal Styles */
+  .payment-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .payment-modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 40px;
+    max-width: 450px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease;
+  }
+
+  .modal-state {
+    text-align: center;
+  }
+
+  .spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid #f3f4f6;
+    border-top-color: #667eea;
+    border-radius: 50%;
+    margin: 0 auto;
+    animation: spin 1s linear infinite;
+  }
+
+  .success-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #10b981;
+    color: white;
+    font-size: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    animation: scaleIn 0.5s ease;
+  }
+
+  .error-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #ef4444;
+    color: white;
+    font-size: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    animation: scaleIn 0.5s ease;
+  }
+
+  .modal-button {
+    padding: 12px 32px;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex: 1;
+  }
+
+  .modal-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.5);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+</style>

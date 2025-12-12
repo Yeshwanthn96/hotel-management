@@ -1,0 +1,35 @@
+<div class="container">
+  <div class="card">
+    <h2 class="card-title">Add Review</h2>
+    <form>
+      <div class="form-group">
+        <label for="reviewHotel">Hotel *</label>
+        <select id="reviewHotel" [(ngModel)]="review.hotelId" name="hotelId" required>
+          <option value="">Select hotel</option>
+          <option *ngFor="let hotel of hotels" [value]="hotel.id">{{hotel.name}}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="reviewTitle">Review Title *</label>
+        <input type="text" id="reviewTitle" [(ngModel)]="review.title" name="title" placeholder="Summarize your experience" required>
+      </div>
+      <div class="form-group">
+        <label for="reviewRating">Rating *</label>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <label *ngFor="let r of [1,2,3,4,5]" style="margin: 0; cursor: pointer;">
+            <input type="radio" [(ngModel)]="review.rating" [value]="r" name="rating" style="margin-right: 5px;">
+            {{r}} ⭐
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="comment">Review Comment *</label>
+        <textarea id="comment" [(ngModel)]="review.comment" name="comment" rows="4" placeholder="Share your experience..." required></textarea>
+      </div>
+      <div class="flex">
+        <button type="button" (click)="save()" class="btn btn-primary">Submit Review</button>
+        <button type="button" routerLink="/reviews" class="btn btn-secondary">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>

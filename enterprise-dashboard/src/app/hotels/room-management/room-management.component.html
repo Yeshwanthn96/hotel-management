@@ -1,0 +1,118 @@
+<div class="container">
+  <div class="card">
+    <button (click)="goBack()" class="btn btn-secondary back-btn">← Back to Hotels</button>
+    
+    <div *ngIf="error" class="alert alert-error">{{ error }}</div>
+    
+    <div class="header">
+      <div>
+        <h2>Room Management</h2>
+        <p *ngIf="hotel" class="subtitle">{{ hotel.name }}</p>
+      </div>
+      <button (click)="showAddRoom = !showAddRoom" class="btn btn-primary">
+        {{ showAddRoom ? 'Cancel' : '+ Add Room' }}
+      </button>
+    </div>
+    
+    <!-- Add Room Form -->
+    <div *ngIf="showAddRoom" class="add-room-section">
+      <h3>Add New Room</h3>
+      <form>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Room Number *</label>
+            <input type="text" [(ngModel)]="newRoom.roomNumber" name="roomNumber" 
+                   placeholder="e.g., 101" class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label>Room Type *</label>
+            <select [(ngModel)]="newRoom.roomType" name="roomType" class="form-control">
+              <option value="Standard">Standard</option>
+              <option value="Deluxe">Deluxe</option>
+              <option value="Suite">Suite</option>
+              <option value="Presidential Suite">Presidential Suite</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>Capacity *</label>
+            <input type="number" [(ngModel)]="newRoom.capacity" name="capacity" 
+                   min="1" placeholder="Number of guests" class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label>Price per Night *</label>
+            <input type="number" [(ngModel)]="newRoom.pricePerNight" name="price" 
+                   min="0" step="0.01" placeholder="Price" class="form-control">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>Description</label>
+          <textarea [(ngModel)]="newRoom.description" name="description" rows="3" 
+                    placeholder="Room description" class="form-control"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label>Amenities</label>
+          <div class="amenities-input">
+            <input type="text" [(ngModel)]="amenityInput" name="amenityInput" 
+                   placeholder="Add amenity" class="form-control" (keyup.enter)="addAmenity()">
+            <button type="button" (click)="addAmenity()" class="btn btn-secondary">Add</button>
+          </div>
+          <div *ngIf="newRoom.amenities && newRoom.amenities.length > 0" class="amenities-list">
+            <span *ngFor="let amenity of newRoom.amenities" class="amenity-tag">
+              {{ amenity }}
+              <button type="button" (click)="removeAmenity(amenity)" class="remove-btn">×</button>
+            </span>
+          </div>
+        </div>
+        
+        <button type="button" (click)="saveRoom()" class="btn btn-primary" [disabled]="loading">
+          Save Room
+        </button>
+      </form>
+    </div>
+    
+    <!-- Rooms List -->
+    <div *ngIf="loading" class="loading">Loading rooms...</div>
+    
+    <div *ngIf="!loading && rooms.length > 0" class="rooms-grid">
+      <div *ngFor="let room of rooms" class="room-card">
+        <div class="room-header">
+          <div>
+            <h3>{{ room.roomType }}</h3>
+            <span class="room-number">Room {{ room.roomNumber }}</span>
+          </div>
+          <span [class.status-active]="room.active" [class.status-inactive]="!room.active">
+            {{ room.active ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+        
+        <p class="description">{{ room.description }}</p>
+        
+        <div class="room-info">
+          <span>👥 {{ room.capacity }} guests</span>
+          <span class="price">${{ room.pricePerNight }}/night</span>
+        </div>
+        
+        <div class="amenities-list">
+          <span *ngFor="let amenity of room.amenities" class="amenity-tag">{{ amenity }}</span>
+        </div>
+        
+        <div class="room-actions">
+          <button (click)="toggleActive(room)" class="btn btn-warning">
+            {{ room.active ? 'Deactivate' : 'Activate' }}
+          </button>
+          <button (click)="deleteRoom(room)" class="btn btn-danger">Delete</button>
+        </div>
+      </div>
+    </div>
+    
+    <div *ngIf="!loading && rooms.length === 0 && !showAddRoom" class="empty-state">
+      <h3>No Rooms Yet</h3>
+      <p>Add your first room to get started</p>
+    </div>
+  </div>
+</div>
