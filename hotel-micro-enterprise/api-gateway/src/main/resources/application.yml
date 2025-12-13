@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: ${PORT:8080}
 
 spring:
   application:
@@ -9,46 +9,46 @@ spring:
     gateway:
       discovery:
         locator:
-          enabled: true
+          enabled: ${EUREKA_ENABLED:true}
 
       routes:
         - id: user-auth
-          uri: lb://USER-SERVICE
+          uri: ${USER_SERVICE_URL:lb://USER-SERVICE}
           predicates:
             - Path=/api/auth/**
 
         - id: user-service
-          uri: lb://USER-SERVICE
+          uri: ${USER_SERVICE_URL:lb://USER-SERVICE}
           predicates:
             - Path=/api/users/**
 
         - id: hotel-service
-          uri: lb://HOTEL-SERVICE
+          uri: ${HOTEL_SERVICE_URL:lb://HOTEL-SERVICE}
           predicates:
             - Path=/api/hotels/**
 
         - id: room-service
-          uri: lb://HOTEL-SERVICE
+          uri: ${HOTEL_SERVICE_URL:lb://HOTEL-SERVICE}
           predicates:
             - Path=/api/rooms/**
 
         - id: booking-service
-          uri: lb://BOOKING-SERVICE
+          uri: ${BOOKING_SERVICE_URL:lb://BOOKING-SERVICE}
           predicates:
             - Path=/api/bookings/**
 
         - id: payment-service
-          uri: lb://PAYMENT-SERVICE
+          uri: ${PAYMENT_SERVICE_URL:lb://PAYMENT-SERVICE}
           predicates:
             - Path=/api/payments/**
 
         - id: review-service
-          uri: lb://REVIEW-SERVICE
+          uri: ${REVIEW_SERVICE_URL:lb://REVIEW-SERVICE}
           predicates:
             - Path=/api/reviews/**
 
         - id: analytics-service
-          uri: lb://ANALYTICS-SERVICE
+          uri: ${ANALYTICS_SERVICE_URL:lb://ANALYTICS-SERVICE}
           predicates:
             - Path=/api/analytics/**
 
@@ -63,4 +63,5 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+    enabled: ${EUREKA_ENABLED:true}

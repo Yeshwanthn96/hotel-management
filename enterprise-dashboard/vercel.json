@@ -4,21 +4,11 @@
   "outputDirectory": "dist/enterprise-dashboard",
   "devCommand": "ng serve --port $PORT",
   "framework": "angular",
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "http://localhost:8080/api/$1"
-    },
-    {
-      "src": "/(.*\\.(js|css|jpg|jpeg|png|gif|svg|ico|json|woff|woff2|ttf|eot))",
-      "dest": "/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ],
   "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "http://localhost:8080/api/$1"
+    },
     {
       "source": "/(.*)",
       "destination": "/index.html"

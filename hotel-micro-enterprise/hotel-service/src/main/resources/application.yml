@@ -1,5 +1,5 @@
 server:
-  port: 8092
+  port: ${PORT:8092}
 
 spring:
   application:
@@ -7,14 +7,15 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb://localhost:27017/hotel_catalog
+      uri: ${MONGODB_URI:mongodb://localhost:27017/hotel_catalog}
       auto-index-creation: true
 
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+    enabled: ${EUREKA_ENABLED:true}
 
 jwt:
-  secret: mySecretKey12345678901234567890
+  secret: ${JWT_SECRET:mySecretKey12345678901234567890}
   expiration: 3600000

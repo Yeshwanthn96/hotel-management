@@ -1,0 +1,75 @@
+services:
+  # Service Registry (Eureka)
+  - type: web
+    name: service-registry
+    env: docker
+    dockerfilePath: ./service-registry/Dockerfile
+    dockerContext: ./service-registry
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: PORT
+        value: 8761
+
+  # API Gateway
+  - type: web
+    name: api-gateway
+    env: docker
+    dockerfilePath: ./api-gateway/Dockerfile
+    dockerContext: ./api-gateway
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+        fromService:
+          type: web
+          name: service-registry
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: MONGODB_URI
+        sync: false
+
+  # User Service
+  - type: web
+    name: user-service
+    env: docker
+    dockerfilePath: ./user-service/Dockerfile
+    dockerContext: ./user-service
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: PORT
+        value: 8091
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+
+  # Hotel Service
+  - type: web
+    name: hotel-service
+    env: docker
+    dockerfilePath: ./hotel-service/Dockerfile
+    dockerContext: ./hotel-service
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: PORT
+        value: 8092
+      - key: MONGODB_URI
+        sync: false
+
+  # Booking Service
+  - type: web
+    name: booking-service
+    env: docker
+    dockerfilePath: ./booking-service/Dockerfile
+    dockerContext: ./booking-service
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: PORT
+        value: 8093
+      - key: MONGODB_URI
+        sync: false
