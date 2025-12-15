@@ -43,6 +43,13 @@ export class BookingsAddComponent implements OnInit {
   cvvError = '';
   cardNameError = '';
   
+  // Success modal states
+  showSuccessModal = false;
+  successMessage = '';
+  paymentInfo = '';
+  bookingId = '';
+  isProcessing = false;
+  
   constructor(
     private bookingService: BookingsService,
     private hotelService: HotelService,
@@ -275,21 +282,33 @@ export class BookingsAddComponent implements OnInit {
       paymentMethod: 'MOCK'  // Backend still uses MOCK for testing
     };
     
+    this.isProcessing = true;
+    
     this.bookingService.createBooking(request).subscribe({
       next: (result) => {
-        let paymentInfo = '';
+        this.isProcessing = false;
+        
         if (this.booking.paymentMethod === 'STRIPE') {
           const lastFour = this.cardDetails.cardNumber.replace(/\s/g, '').slice(-4);
           const cardType = this.cardBrand.charAt(0).toUpperCase() + this.cardBrand.slice(1);
-          paymentInfo = `${cardType} ending in ${lastFour}`;
+          this.paymentInfo = `${cardType} •••• ${lastFour}`;
         } else {
-          paymentInfo = `PayPal (${this.paypalDetails.email})`;
+          this.paymentInfo = `PayPal (${this.paypalDetails.email})`;
         }
         
-        alert(`✅ Payment Successful!\n\n🏛️ Booking Confirmed\nPayment: ${paymentInfo}\nStatus: ${result.status}`);
-        this.router.navigate(['/bookings']);
+        this.bookingId = result.id || 'N/A';
+        this.successMessage = result.message || 'Your booking has been confirmed!';
+        this.showSuccessModal = true;
       },
-      error: (err) => alert(`❌ Payment Failed: ${err.error?.message || err.message}`)
+      error: (err) => {
+        this.isProcessing = false;
+        alert(`❌ Payment Failed: ${err.error?.message || err.message}`);
+      }
     });
+  }
+
+  closeSuccessModal() {
+    this.showSuccessModal = false;
+    this.router.navigate(['/bookings']);
   }
 }
