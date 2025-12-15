@@ -5,6 +5,7 @@ import com.example.reviewservice.repository.ReviewRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -23,7 +24,10 @@ public class ReviewService {
     }
 
     public List<Review> getHotelReviews(String hotelId) {
-        return reviewRepository.findByHotelId(hotelId);
+        // Only return approved reviews for public view
+        return reviewRepository.findByHotelId(hotelId).stream()
+                .filter(review -> "APPROVED".equals(review.getStatus()))
+                .collect(Collectors.toList());
     }
 
     public List<Review> getUserReviews(String userId) {
@@ -38,18 +42,37 @@ public class ReviewService {
         reviewRepository.deleteById(id);
     }
 
-    public Optional<Review> approveReview(String id) {
+    public Optional<Review> approveReview(String id, String adminId) {
         return reviewRepository.findById(id).map(review -> {
+            review.setStatus("APPROVED");
             review.setVerified(true);
+            review.setApprovedBy(adminId);
+            review.setApprovedAt(LocalDateTime.now());
             return reviewRepository.save(review);
         });
     }
 
-    public Optional<Review> rejectReview(String id) {
+    public Optional<Review> rejectReview(String id, String reason) {
         return reviewRepository.findById(id).map(review -> {
+            review.setStatus("REJECTED");
+            review.setRejectionReason(reason);
             review.setVerified(false);
             return reviewRepository.save(review);
         });
+    }
+
+    public Optional<Review> addAdminReply(String id, String reply) {
+        return reviewRepository.findById(id).map(review -> {
+            review.setAdminReply(reply);
+            return reviewRepository.save(review);
+        });
+    }
+
+    public List<Review> getPendingReviews() {
+        return reviewRepository.findAll().stream()
+                .filter(review -> "PENDING_APPROVAL".equals(review.getStatus()))
+                .sorted(Comparator.comparing(Review::getCreatedAt))
+                .collect(Collectors.toList());
     }
 
     /**

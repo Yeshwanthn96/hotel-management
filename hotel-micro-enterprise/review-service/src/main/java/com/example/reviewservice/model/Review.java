@@ -10,17 +10,31 @@ public class Review {
     @Id
     private String id;
     private String userId;
+    private String userName; // User display name
     private String hotelId;
+    private String hotelName; // Hotel display name
     private String bookingId;
     private int rating; // 1-5
     private String title;
     private String comment;
+    private String status; // PENDING_APPROVAL, APPROVED, REJECTED
+    private String rejectionReason;
+    private String adminReply;
+    private String approvedBy; // Admin ID who approved
     private LocalDateTime createdAt;
+    private LocalDateTime approvedAt;
     private boolean verified; // Only guests who stayed can review
+    private int helpfulCount; // How many users found this helpful
+    private boolean reported;
+    private int reportCount;
 
     public Review() {
         this.createdAt = LocalDateTime.now();
         this.verified = false;
+        this.status = "PENDING_APPROVAL";
+        this.helpfulCount = 0;
+        this.reported = false;
+        this.reportCount = 0;
     }
 
     // Getters and Setters
@@ -97,5 +111,85 @@ public class Review {
 
     public void setVerified(boolean verified) {
         this.verified = verified;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getHotelName() {
+        return hotelName;
+    }
+
+    public void setHotelName(String hotelName) {
+        this.hotelName = hotelName;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getRejectionReason() {
+        return rejectionReason;
+    }
+
+    public void setRejectionReason(String rejectionReason) {
+        this.rejectionReason = rejectionReason;
+    }
+
+    public String getAdminReply() {
+        return adminReply;
+    }
+
+    public void setAdminReply(String adminReply) {
+        this.adminReply = adminReply;
+    }
+
+    public String getApprovedBy() {
+        return approvedBy;
+    }
+
+    public void setApprovedBy(String approvedBy) {
+        this.approvedBy = approvedBy;
+    }
+
+    public LocalDateTime getApprovedAt() {
+        return approvedAt;
+    }
+
+    public void setApprovedAt(LocalDateTime approvedAt) {
+        this.approvedAt = approvedAt;
+    }
+
+    public int getHelpfulCount() {
+        return helpfulCount;
+    }
+
+    public void setHelpfulCount(int helpfulCount) {
+        this.helpfulCount = helpfulCount;
+    }
+
+    public boolean isReported() {
+        return reported;
+    }
+
+    public void setReported(boolean reported) {
+        this.reported = reported;
+    }
+
+    public int getReportCount() {
+        return reportCount;
+    }
+
+    public void setReportCount(int reportCount) {
+        this.reportCount = reportCount;
     }
 }

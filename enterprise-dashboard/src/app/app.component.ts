@@ -9,8 +9,8 @@ import { AuthService } from './auth/auth.service';
       <div class="logo">LUXURY HOTELS</div>
       <nav>
         <a routerLink="/hotels" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}">Hotels</a>
-        <a *ngIf="isLoggedIn()" routerLink="/bookings" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}">Bookings</a>
-        <a *ngIf="isLoggedIn()" routerLink="/payments" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}">Payments</a>
+        <a *ngIf="isLoggedIn()" routerLink="/bookings" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}">My Bookings</a>
+        <a *ngIf="isLoggedIn() && !isAdmin()" routerLink="/payments" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}">Payments</a>
         <a *ngIf="isAdmin()" routerLink="/admin/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}">Admin Dashboard</a>
         <a *ngIf="!isLoggedIn()" routerLink="/auth/login" class="login-btn">Login</a>
         <div *ngIf="isLoggedIn()" style="display: flex; align-items: center; gap: 15px;">

@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import java.time.LocalDate;
@@ -40,6 +41,10 @@ public class BookingService {
 
     @Autowired
     private ConfirmBookingStep confirmBookingStep;
+
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    private static final String HOTEL_SERVICE_URL = "http://localhost:8092/api/hotels";
 
     @PostConstruct
     public void init() {
@@ -151,25 +156,63 @@ public class BookingService {
     public BookingResponse getBooking(String bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
-        return new BookingResponse(booking);
+        return enrichBookingResponse(new BookingResponse(booking));
     }
 
     public List<BookingResponse> getUserBookings(String userId) {
         return bookingRepository.findByUserId(userId).stream()
-                .map(BookingResponse::new)
+                .map(booking -> enrichBookingResponse(new BookingResponse(booking)))
                 .collect(Collectors.toList());
     }
 
     public List<BookingResponse> getAllBookings() {
         return bookingRepository.findAll().stream()
-                .map(BookingResponse::new)
+                .map(booking -> enrichBookingResponse(new BookingResponse(booking)))
                 .collect(Collectors.toList());
     }
 
     public List<BookingResponse> getHotelBookings(String hotelId) {
         return bookingRepository.findByHotelId(hotelId).stream()
-                .map(BookingResponse::new)
+                .map(booking -> enrichBookingResponse(new BookingResponse(booking)))
                 .collect(Collectors.toList());
+    }
+
+    private BookingResponse enrichBookingResponse(BookingResponse response) {
+        try {
+            // Fetch hotel details
+            String hotelUrl = HOTEL_SERVICE_URL + "/" + response.getHotelId();
+            java.util.Map<String, Object> hotelResponse = restTemplate.getForObject(hotelUrl, java.util.Map.class);
+            if (hotelResponse != null) {
+                response.setHotelName((String) hotelResponse.get("name"));
+            }
+
+            // Fetch room details
+            String roomUrl = HOTEL_SERVICE_URL + "/" + response.getHotelId() + "/rooms/" + response.getRoomId();
+            java.util.Map<String, Object> roomResponse = restTemplate.getForObject(roomUrl, java.util.Map.class);
+            if (roomResponse != null) {
+                response.setRoomType((String) roomResponse.get("type"));
+                Object roomNumber = roomResponse.get("roomNumber");
+                response.setRoomNumber(roomNumber != null ? roomNumber.toString() : "N/A");
+            }
+
+            // Set payment status based on booking status and payment ID
+            if (response.getPaymentId() != null && !response.getPaymentId().isEmpty()) {
+                response.setPaymentStatus("PAID");
+            } else if (response.getStatus() == BookingStatus.PAYMENT_PENDING) {
+                response.setPaymentStatus("PENDING");
+            } else if (response.getStatus() == BookingStatus.CONFIRMED) {
+                response.setPaymentStatus("PAID");
+            } else {
+                response.setPaymentStatus("UNPAID");
+            }
+        } catch (Exception e) {
+            logger.warn("Failed to enrich booking response: {}", e.getMessage());
+            // Set defaults if service calls fail
+            response.setHotelName("Unknown Hotel");
+            response.setRoomType("Unknown Room");
+            response.setRoomNumber("N/A");
+        }
+        return response;
     }
 
     /**

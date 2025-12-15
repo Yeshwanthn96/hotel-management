@@ -62,6 +62,12 @@
           (click)="cancelBooking(booking.id)">
           Cancel Booking
         </button>
+        <button 
+          *ngIf="booking.status === 'COMPLETED'" 
+          class="btn btn-primary" 
+          [routerLink]="['/bookings/review', booking.id]">
+          ⭐ Write Review
+        </button>
       </div>
     </div>
   </div>

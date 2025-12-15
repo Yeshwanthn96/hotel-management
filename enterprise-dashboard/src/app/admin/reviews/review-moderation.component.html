@@ -1,0 +1,197 @@
+<div class="review-moderation-container">
+  <div class="header">
+    <h1>Review Moderation</h1>
+    <div class="stats">
+      <div class="stat-card">
+        <span class="stat-value">{{ filteredReviews.length }}</span>
+        <span class="stat-label">Total Reviews</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success/Error Messages -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    {{ successMessage }}
+  </div>
+  <div *ngIf="error && !showDetailModal" class="alert alert-error">
+    {{ error }}
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <div class="filter-group">
+      <label>Status:</label>
+      <button class="filter-btn" [class.active]="statusFilter === 'PENDING_APPROVAL'" (click)="filterByStatus('PENDING_APPROVAL')">
+        Pending
+      </button>
+      <button class="filter-btn" [class.active]="statusFilter === 'APPROVED'" (click)="filterByStatus('APPROVED')">
+        Approved
+      </button>
+      <button class="filter-btn" [class.active]="statusFilter === 'REJECTED'" (click)="filterByStatus('REJECTED')">
+        Rejected
+      </button>
+      <button class="filter-btn" [class.active]="statusFilter === 'ALL'" (click)="filterByStatus('ALL')">
+        All
+      </button>
+    </div>
+
+    <div class="filter-group">
+      <label>Rating:</label>
+      <button class="filter-btn" [class.active]="ratingFilter === 0" (click)="filterByRating(0)">All</button>
+      <button *ngFor="let r of [5, 4, 3, 2, 1]" class="filter-btn" [class.active]="ratingFilter === r" (click)="filterByRating(r)">
+        {{ r }} ⭐
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading && !showDetailModal" class="loading">
+    <div class="spinner"></div>
+    <p>Loading reviews...</p>
+  </div>
+
+  <!-- Reviews List -->
+  <div class="reviews-list" *ngIf="!loading">
+    <div class="review-card" *ngFor="let review of filteredReviews" (click)="openDetailModal(review)">
+      <div class="review-header">
+        <div class="user-info">
+          <div class="avatar">{{ review.userName?.charAt(0) || 'U' }}</div>
+          <div class="info">
+            <h3>{{ review.userName || 'User' }}</h3>
+            <p class="hotel-name">{{ review.hotelName }}</p>
+          </div>
+        </div>
+        <div class="review-meta">
+          <div class="rating">
+            <span *ngFor="let star of getStarsArray(review.rating)" class="star filled">★</span>
+            <span *ngFor="let star of getEmptyStarsArray(review.rating)" class="star">★</span>
+          </div>
+          <span class="date">{{ review.createdAt | date:'MMM d, y' }}</span>
+        </div>
+      </div>
+
+      <div class="review-content">
+        <h4>{{ review.title }}</h4>
+        <p>{{ review.comment }}</p>
+      </div>
+
+      <div class="review-footer">
+        <span class="status-badge" [ngClass]="'status-' + review.status?.toLowerCase().replace('_', '-')">
+          {{ review.status?.replace('_', ' ') }}
+        </span>
+        <div class="quick-actions">
+          <button class="btn-icon" title="View Details">
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="filteredReviews.length === 0" class="no-data">
+      <i class="fas fa-comment-slash"></i>
+      <p>No reviews found</p>
+    </div>
+  </div>
+
+  <!-- Detail Modal -->
+  <div class="modal-overlay" *ngIf="showDetailModal" (click)="closeDetailModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Review Details</h2>
+        <button class="close-btn" (click)="closeDetailModal()">&times;</button>
+      </div>
+
+      <div class="modal-body" *ngIf="selectedReview">
+        <!-- Review Info -->
+        <div class="review-detail-section">
+          <div class="user-header">
+            <div class="avatar-large">{{ selectedReview.userName?.charAt(0) || 'U' }}</div>
+            <div class="user-details">
+              <h3>{{ selectedReview.userName || 'Anonymous User' }}</h3>
+              <p>{{ selectedReview.hotelName }}</p>
+              <p class="date-text">Posted on {{ selectedReview.createdAt | date:'MMMM d, y' }}</p>
+            </div>
+            <span class="status-badge-large" [ngClass]="'status-' + selectedReview.status?.toLowerCase().replace('_', '-')">
+              {{ selectedReview.status?.replace('_', ' ') }}
+            </span>
+          </div>
+
+          <div class="rating-display">
+            <span *ngFor="let star of getStarsArray(selectedReview.rating)" class="star-large filled">★</span>
+            <span *ngFor="let star of getEmptyStarsArray(selectedReview.rating)" class="star-large">★</span>
+            <span class="rating-text">{{ selectedReview.rating }}/5</span>
+          </div>
+
+          <div class="review-text">
+            <h4>{{ selectedReview.title }}</h4>
+            <p>{{ selectedReview.comment }}</p>
+          </div>
+
+          <div class="review-stats" *ngIf="selectedReview.verified">
+            <span class="verified-badge">
+              <i class="fas fa-check-circle"></i> Verified Stay
+            </span>
+          </div>
+        </div>
+
+        <!-- Admin Actions -->
+        <div class="admin-actions-section" *ngIf="selectedReview.status === 'PENDING_APPROVAL'">
+          <h3>Moderation Actions</h3>
+          
+          <div class="action-buttons">
+            <button class="btn btn-approve" (click)="approveReview()" [disabled]="loading">
+              <i class="fas fa-check"></i> Approve Review
+            </button>
+            <button class="btn btn-reject" (click)="rejectReview()" [disabled]="loading || !rejectionReason.trim()">
+              <i class="fas fa-times"></i> Reject Review
+            </button>
+          </div>
+
+          <div class="rejection-reason-section">
+            <label>Rejection Reason (required to reject):</label>
+            <textarea 
+              [(ngModel)]="rejectionReason" 
+              placeholder="Provide a reason for rejection..."
+              rows="3"></textarea>
+          </div>
+        </div>
+
+        <!-- Admin Reply Section -->
+        <div class="reply-section">
+          <h3>Hotel Response</h3>
+          
+          <div *ngIf="selectedReview.adminReply" class="existing-reply">
+            <p>{{ selectedReview.adminReply }}</p>
+          </div>
+
+          <div class="reply-form">
+            <textarea 
+              [(ngModel)]="adminReply" 
+              placeholder="Write a response to this review..."
+              rows="4"></textarea>
+            <button class="btn btn-primary" (click)="saveReply()" [disabled]="loading || !adminReply.trim()">
+              <i class="fas fa-reply"></i> {{ selectedReview.adminReply ? 'Update Reply' : 'Add Reply' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Rejection Info -->
+        <div class="rejection-info" *ngIf="selectedReview.status === 'REJECTED' && selectedReview.rejectionReason">
+          <h3>Rejection Reason</h3>
+          <p>{{ selectedReview.rejectionReason }}</p>
+        </div>
+
+        <!-- Delete Button -->
+        <div class="danger-zone">
+          <button class="btn btn-danger" (click)="deleteReview()" [disabled]="loading">
+            <i class="fas fa-trash"></i> Delete Review Permanently
+          </button>
+        </div>
+
+        <div *ngIf="error" class="alert alert-error">
+          {{ error }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

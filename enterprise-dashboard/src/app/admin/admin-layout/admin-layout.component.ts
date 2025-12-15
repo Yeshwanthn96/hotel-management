@@ -14,11 +14,12 @@ export class AdminLayoutComponent {
   menuItems = [
     { path: '/admin/dashboard', icon: '📊', label: 'Dashboard', active: true },
     { path: '/admin/hotels', icon: '🏨', label: 'Hotels', active: false },
-    { path: '/admin/services', icon: '🛎️', label: 'Services', active: false },
+    { path: '/admin/service-management', icon: '🛎️', label: 'Service Management', active: false },
     { path: '/hotels', icon: '🏢', label: 'Room Management', active: false },
     { path: '/bookings', icon: '📅', label: 'Bookings', active: false },
     { path: '/admin/users', icon: '👥', label: 'Users', active: false },
-    { path: '/reviews', icon: '⭐', label: 'Reviews', active: false },
+    { path: '/admin/reviews', icon: '⭐', label: 'Review Moderation', active: false },
+    { path: '/admin/notifications', icon: '🔔', label: 'Notifications', active: false },
     { path: '/payments', icon: '💳', label: 'Payments', active: false },
     { path: '/analytics', icon: '📈', label: 'Analytics', active: false }
   ];

@@ -103,8 +103,16 @@ public class ReviewController {
      * Approve a review (Admin only)
      */
     @PutMapping("/{id}/approve")
-    public ResponseEntity<Review> approveReview(@PathVariable String id) {
-        return reviewService.approveReview(id)
+    public ResponseEntity<?> approveReview(
+            @PathVariable String id,
+            @RequestHeader(value = "X-User-Id", required = false) String adminId,
+            @RequestHeader(value = "X-User-Role", required = false) String role) {
+
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(403).body(Map.of("error", "Only admins can approve reviews"));
+        }
+
+        return reviewService.approveReview(id, adminId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -113,10 +121,82 @@ public class ReviewController {
      * Reject a review (Admin only)
      */
     @PutMapping("/{id}/reject")
-    public ResponseEntity<Review> rejectReview(@PathVariable String id) {
-        return reviewService.rejectReview(id)
+    public ResponseEntity<?> rejectReview(
+            @PathVariable String id,
+            @RequestBody Map<String, String> body,
+            @RequestHeader(value = "X-User-Role", required = false) String role) {
+
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(403).body(Map.of("error", "Only admins can reject reviews"));
+        }
+
+        String reason = body.get("reason");
+        return reviewService.rejectReview(id, reason)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Reply to a review (Admin only)
+     */
+    @PostMapping("/{id}/reply")
+    public ResponseEntity<?> replyToReview(
+            @PathVariable String id,
+            @RequestBody Map<String, String> body,
+            @RequestHeader(value = "X-User-Role", required = false) String role) {
+
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(403).body(Map.of("error", "Only admins can reply to reviews"));
+        }
+
+        String reply = body.get("reply");
+        return reviewService.addAdminReply(id, reply)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Get pending reviews (Admin only)
+     */
+    @GetMapping("/admin/pending")
+    public ResponseEntity<?> getPendingReviews(
+            @RequestHeader(value = "X-User-Role", required = false) String role) {
+
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(403).body(Map.of("error", "Only admins can view pending reviews"));
+        }
+
+        return ResponseEntity.ok(reviewService.getPendingReviews());
+    }
+
+    /**
+     * Get all reviews (Admin only) - includes all statuses
+     */
+    @GetMapping("/admin/all")
+    public ResponseEntity<?> getAllReviewsAdmin(
+            @RequestHeader(value = "X-User-Role", required = false) String role) {
+
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(403).body(Map.of("error", "Only admins can view all reviews"));
+        }
+
+        return ResponseEntity.ok(reviewService.getAllReviews());
+    }
+
+    /**
+     * Delete review (Admin only)
+     */
+    @DeleteMapping("/admin/{id}")
+    public ResponseEntity<?> deleteReview(
+            @PathVariable String id,
+            @RequestHeader(value = "X-User-Role", required = false) String role) {
+
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(403).body(Map.of("error", "Only admins can delete reviews"));
+        }
+
+        reviewService.deleteReview(id);
+        return ResponseEntity.ok(Map.of("message", "Review deleted successfully"));
     }
 
     @GetMapping("/hotel/{hotelId}/average")

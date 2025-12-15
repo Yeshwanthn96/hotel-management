@@ -21,10 +21,17 @@ public class ProcessPaymentStep implements SagaStep {
                 booking.getId(), paymentMethod);
 
         try {
-            booking.setStatus(BookingStatus.PAYMENT_PENDING);
+            // For MOCK payment, mark as confirmed immediately
+            if ("MOCK".equals(paymentMethod)) {
+                booking.setStatus(BookingStatus.CONFIRMED);
+                booking.setPaymentId("MOCK-" + System.currentTimeMillis());
+                logger.info("Mock payment processed and booking confirmed: {}", booking.getId());
+            } else {
+                // For real payment methods, mark as pending
+                booking.setStatus(BookingStatus.PAYMENT_PENDING);
+                logger.info("Payment pending for booking {}", booking.getId());
+            }
 
-            // Payment will be processed via Payment Service separately
-            // This step just marks the booking as ready for payment
             context.putData("paymentReady", true);
 
             logger.info("Payment step prepared for booking {}", booking.getId());

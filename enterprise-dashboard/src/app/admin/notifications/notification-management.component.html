@@ -1,0 +1,190 @@
+<div class="notification-management-container">
+  <div class="header">
+    <h1>Notification Management</h1>
+    <button class="btn btn-primary" (click)="openSendModal()">
+      <i class="fas fa-paper-plane"></i> Send Bulk Notification
+    </button>
+  </div>
+
+  <!-- Success/Error Messages -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    {{ successMessage }}
+  </div>
+  <div *ngIf="error && !showSendModal" class="alert alert-error">
+    {{ error }}
+  </div>
+
+  <!-- Info Card -->
+  <div class="info-card">
+    <div class="info-icon">
+      <i class="fas fa-info-circle"></i>
+    </div>
+    <div class="info-content">
+      <h3>Send Notifications to Users</h3>
+      <p>Use this panel to send bulk notifications to all users or specific groups. You can schedule notifications for later delivery and choose multiple delivery channels.</p>
+      <p class="note"><strong>Note:</strong> This feature requires backend implementation in the notification-service.</p>
+    </div>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon email">
+        <i class="fas fa-envelope"></i>
+      </div>
+      <div class="stat-content">
+        <h3>Email Channel</h3>
+        <p>Primary notification method</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon sms">
+        <i class="fas fa-sms"></i>
+      </div>
+      <div class="stat-content">
+        <h3>SMS Channel</h3>
+        <p>For urgent notifications</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon app">
+        <i class="fas fa-bell"></i>
+      </div>
+      <div class="stat-content">
+        <h3>In-App Notifications</h3>
+        <p>User dashboard alerts</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Send Modal -->
+  <div class="modal-overlay" *ngIf="showSendModal" (click)="closeSendModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Send Bulk Notification</h2>
+        <button class="close-btn" (click)="closeSendModal()">&times;</button>
+      </div>
+
+      <form [formGroup]="sendForm" class="notification-form">
+        <div class="form-section">
+          <h3>Recipients</h3>
+          
+          <div class="form-group">
+            <label>Recipient Type *</label>
+            <select formControlName="recipientType">
+              <option *ngFor="let type of recipientTypes" [value]="type.value">
+                {{ type.label }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Notification Type *</label>
+            <select formControlName="notificationType">
+              <option *ngFor="let type of notificationTypes" [value]="type">
+                {{ type.replace('_', ' ') }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3>Message Content</h3>
+          
+          <div class="form-group">
+            <label>Subject *</label>
+            <input type="text" formControlName="subject" placeholder="Enter notification subject">
+          </div>
+
+          <div class="form-group">
+            <label>Message *</label>
+            <textarea formControlName="message" rows="5" placeholder="Enter your message here..."></textarea>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3>Delivery Channels</h3>
+          
+          <div class="channels-group" formGroupName="channels">
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="email">
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">
+                <i class="fas fa-envelope"></i> Email
+              </span>
+            </label>
+
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="sms">
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">
+                <i class="fas fa-sms"></i> SMS
+              </span>
+            </label>
+
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="inApp">
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">
+                <i class="fas fa-bell"></i> In-App Notification
+              </span>
+            </label>
+          </div>
+
+          <p class="channel-info" *ngIf="getChannelsSelected() === 0">
+            ⚠️ Please select at least one delivery channel
+          </p>
+        </div>
+
+        <div class="form-section">
+          <h3>Schedule</h3>
+          
+          <div class="schedule-options">
+            <label class="radio-label">
+              <input type="radio" formControlName="scheduleNow" [value]="true">
+              <span class="radio-custom"></span>
+              <span class="radio-text">Send Immediately</span>
+            </label>
+
+            <label class="radio-label">
+              <input type="radio" formControlName="scheduleNow" [value]="false">
+              <span class="radio-custom"></span>
+              <span class="radio-text">Schedule for Later</span>
+            </label>
+          </div>
+
+          <div class="schedule-datetime" *ngIf="!sendForm.get('scheduleNow')?.value">
+            <div class="form-group">
+              <label>Date</label>
+              <input type="date" formControlName="scheduleDate">
+            </div>
+            <div class="form-group">
+              <label>Time</label>
+              <input type="time" formControlName="scheduleTime">
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="error" class="alert alert-error">
+          {{ error }}
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeSendModal()">
+            Cancel
+          </button>
+          <button 
+            type="button" 
+            class="btn btn-primary" 
+            (click)="sendNotification()" 
+            [disabled]="loading || sendForm.invalid || getChannelsSelected() === 0">
+            <i class="fas fa-paper-plane"></i>
+            {{ loading ? 'Sending...' : (sendForm.get('scheduleNow')?.value ? 'Send Now' : 'Schedule Notification') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,102 @@
+<div class="review-container">
+  <div class="page-header">
+    <button class="btn-back" (click)="goBack()">← Back to Booking Details</button>
+    <h1>Write Your Review</h1>
+  </div>
+
+  <div *ngIf="isLoading && !successMessage" class="loading">
+    <p>Loading...</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-error">
+    {{ errorMessage }}
+    <button class="btn btn-secondary" (click)="goBack()" style="margin-top: 10px;">
+      Go Back
+    </button>
+  </div>
+
+  <div *ngIf="successMessage" class="alert alert-success">
+    <h3>✅ {{ successMessage }}</h3>
+    <p>Redirecting to your bookings...</p>
+  </div>
+
+  <div *ngIf="!isLoading && booking && !successMessage && !errorMessage" class="review-form-card">
+    <!-- Booking Information -->
+    <div class="booking-info">
+      <h2>Your Stay at {{ booking.hotelName }}</h2>
+      <div class="stay-details">
+        <p><strong>Check-in:</strong> {{ booking.checkInDate | date: 'MMM d, y' }}</p>
+        <p><strong>Check-out:</strong> {{ booking.checkOutDate | date: 'MMM d, y' }}</p>
+        <p><strong>Room:</strong> {{ booking.roomType }} - {{ booking.roomNumber }}</p>
+        <p><strong>Booking ID:</strong> {{ booking.id }}</p>
+      </div>
+    </div>
+
+    <!-- Review Form -->
+    <form (ngSubmit)="submitReview()" class="review-form">
+      <!-- Rating Section -->
+      <div class="form-group">
+        <label>Your Rating *</label>
+        <div class="star-rating">
+          <span 
+            *ngFor="let star of [1,2,3,4,5]" 
+            class="star" 
+            [class.filled]="star <= review.rating"
+            (click)="setRating(star)">
+            ★
+          </span>
+        </div>
+        <p class="rating-text">{{ review.rating }} out of 5 stars</p>
+      </div>
+
+      <!-- Title -->
+      <div class="form-group">
+        <label for="title">Review Title *</label>
+        <input 
+          type="text" 
+          id="title" 
+          [(ngModel)]="review.title" 
+          name="title"
+          placeholder="Summarize your experience"
+          maxlength="100"
+          required>
+        <small>{{ review.title.length }}/100 characters</small>
+      </div>
+
+      <!-- Comment -->
+      <div class="form-group">
+        <label for="comment">Your Review *</label>
+        <textarea 
+          id="comment" 
+          [(ngModel)]="review.comment" 
+          name="comment"
+          rows="6"
+          placeholder="Tell us about your experience at this hotel. What did you like? What could be improved?"
+          maxlength="1000"
+          required></textarea>
+        <small>{{ review.comment.length }}/1000 characters</small>
+      </div>
+
+      <!-- Info Box -->
+      <div class="info-box">
+        <p><strong>📝 Review Guidelines:</strong></p>
+        <ul>
+          <li>Be honest and detailed about your experience</li>
+          <li>Focus on the hotel facilities, service, and cleanliness</li>
+          <li>Your review will be checked by our team before publishing</li>
+          <li>Avoid inappropriate language or personal information</li>
+        </ul>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="goBack()">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+          Submit Review
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

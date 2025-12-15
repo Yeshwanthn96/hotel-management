@@ -4,12 +4,14 @@ import { BookingsListComponent } from './bookings-list/bookings-list.component';
 import { BookingsAddComponent } from './bookings-add/bookings-add.component';
 import { UserBookingsComponent } from './user-bookings/user-bookings.component';
 import { BookingDetailsComponent } from './booking-details/booking-details.component';
+import { BookingReviewComponent } from './booking-review/booking-review.component';
 
 const routes: Routes = [
   { path: '', component: UserBookingsComponent }, // User's own bookings
   { path: 'my-bookings', component: UserBookingsComponent },
   { path: 'add', component: BookingsAddComponent },
-  { path: 'details/:id', component: BookingDetailsComponent }
+  { path: 'details/:id', component: BookingDetailsComponent },
+  { path: 'review/:id', component: BookingReviewComponent } // Write review for completed booking
 ];
 
 @NgModule({

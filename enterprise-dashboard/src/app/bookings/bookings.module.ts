@@ -6,9 +6,10 @@ import { BookingsListComponent } from './bookings-list/bookings-list.component';
 import { BookingsAddComponent } from './bookings-add/bookings-add.component';
 import { UserBookingsComponent } from './user-bookings/user-bookings.component';
 import { BookingDetailsComponent } from './booking-details/booking-details.component';
+import { BookingReviewComponent } from './booking-review/booking-review.component';
 
 @NgModule({
-  declarations: [BookingsListComponent, BookingsAddComponent, UserBookingsComponent, BookingDetailsComponent],
+  declarations: [BookingsListComponent, BookingsAddComponent, UserBookingsComponent, BookingDetailsComponent, BookingReviewComponent],
   imports: [CommonModule, FormsModule, BookingsRoutingModule]
 })
 export class BookingsModule {}

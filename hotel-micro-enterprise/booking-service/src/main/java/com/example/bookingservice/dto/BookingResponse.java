@@ -20,6 +20,12 @@ public class BookingResponse {
     private LocalDateTime expiresAt;
     private String message;
 
+    // Additional fields for display
+    private String hotelName;
+    private String roomType;
+    private String roomNumber;
+    private String paymentStatus;
+
     public BookingResponse() {
     }
 
@@ -141,5 +147,37 @@ public class BookingResponse {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public String getHotelName() {
+        return hotelName;
+    }
+
+    public void setHotelName(String hotelName) {
+        this.hotelName = hotelName;
+    }
+
+    public String getRoomType() {
+        return roomType;
+    }
+
+    public void setRoomType(String roomType) {
+        this.roomType = roomType;
+    }
+
+    public String getRoomNumber() {
+        return roomNumber;
+    }
+
+    public void setRoomNumber(String roomNumber) {
+        this.roomNumber = roomNumber;
+    }
+
+    public String getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
     }
 }
