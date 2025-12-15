@@ -37,43 +37,110 @@
       
       <div class="form-group">
         <label>Payment Method *</label>
-        <div style="display: flex; gap: 15px; margin-top: 8px;">
-          <label style="cursor: pointer;">
-            <input type="radio" [(ngModel)]="booking.paymentMethod" name="payment" value="STRIPE"> Credit Card
+        <div class="payment-method-selector">
+          <label class="payment-option" [class.selected]="booking.paymentMethod === 'STRIPE'">
+            <input type="radio" [(ngModel)]="booking.paymentMethod" name="payment" value="STRIPE">
+            <span class="payment-icon">💳</span>
+            <span>Credit / Debit Card</span>
           </label>
-          <label style="cursor: pointer;">
-            <input type="radio" [(ngModel)]="booking.paymentMethod" name="payment" value="PAYPAL"> PayPal
+          <label class="payment-option" [class.selected]="booking.paymentMethod === 'PAYPAL'">
+            <input type="radio" [(ngModel)]="booking.paymentMethod" name="payment" value="PAYPAL">
+            <span class="payment-icon">🔵</span>
+            <span>PayPal</span>
           </label>
         </div>
       </div>
 
-      <!-- Credit Card Payment Details -->
-      <div *ngIf="booking.paymentMethod === 'STRIPE'" class="payment-details">
-        <h3 style="margin: 20px 0 15px; color: #333; font-size: 18px;">Credit Card Details</h3>
-        <div class="form-group">
-          <label for="cardNumber">Card Number *</label>
-          <input type="text" id="cardNumber" [(ngModel)]="cardDetails.cardNumber" 
-                 name="cardNumber" placeholder="4242 4242 4242 4242" maxlength="19">
-          <small style="color: #666;">Test card: 4242 4242 4242 4242</small>
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-          <div class="form-group">
-            <label for="expiry">Expiry Date *</label>
-            <input type="text" id="expiry" [(ngModel)]="cardDetails.expiry" 
-                   name="expiry" placeholder="MM/YY" maxlength="5">
-            <small style="color: #666;">Test: 12/25</small>
-          </div>
-          <div class="form-group">
-            <label for="cvv">CVV *</label>
-            <input type="text" id="cvv" [(ngModel)]="cardDetails.cvv" 
-                   name="cvv" placeholder="123" maxlength="3">
-            <small style="color: #666;">Test: 123</small>
+      <!-- Stripe-like Credit Card Payment Form -->
+      <div *ngIf="booking.paymentMethod === 'STRIPE'" class="stripe-payment-form">
+        <div class="stripe-header">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" 
+               alt="Stripe" style="height: 28px;">
+          <div class="secure-badge">
+            <span>🔒 Secure Payment</span>
           </div>
         </div>
-        <div class="form-group">
-          <label for="cardName">Cardholder Name *</label>
-          <input type="text" id="cardName" [(ngModel)]="cardDetails.cardName" 
-                 name="cardName" placeholder="John Doe">
+        
+        <div class="card-input-group">
+          <label for="cardNumber">Card Number</label>
+          <div class="card-number-wrapper">
+            <input 
+              type="text" 
+              id="cardNumber" 
+              [(ngModel)]="cardDetails.cardNumber" 
+              (input)="formatCardNumber($event)"
+              (blur)="validateCardNumber()"
+              name="cardNumber" 
+              placeholder="1234 5678 9012 3456" 
+              maxlength="19"
+              [class.error]="cardNumberError"
+              class="stripe-input">
+            <span class="card-brand" *ngIf="cardBrand">
+              <img [src]="getCardBrandIcon()" [alt]="cardBrand" style="height: 24px;">
+            </span>
+          </div>
+          <small class="error-message" *ngIf="cardNumberError">{{ cardNumberError }}</small>
+          <small class="hint-message" *ngIf="!cardNumberError">Test: 4242 4242 4242 4242 (Visa) or 5555 5555 5555 4444 (Mastercard)</small>
+        </div>
+
+        <div class="card-row">
+          <div class="card-input-group">
+            <label for="expiry">Expiration</label>
+            <input 
+              type="text" 
+              id="expiry" 
+              [(ngModel)]="cardDetails.expiry" 
+              (input)="formatExpiry($event)"
+              (blur)="validateExpiry()"
+              name="expiry" 
+              placeholder="MM / YY" 
+              maxlength="7"
+              [class.error]="expiryError"
+              class="stripe-input">
+            <small class="error-message" *ngIf="expiryError">{{ expiryError }}</small>
+            <small class="hint-message" *ngIf="!expiryError">Test: 12/25 or later</small>
+          </div>
+          
+          <div class="card-input-group">
+            <label for="cvv">CVC</label>
+            <div style="position: relative;">
+              <input 
+                type="text" 
+                id="cvv" 
+                [(ngModel)]="cardDetails.cvv" 
+                (input)="formatCVV($event)"
+                (blur)="validateCVV()"
+                name="cvv" 
+                placeholder="123" 
+                maxlength="4"
+                [class.error]="cvvError"
+                class="stripe-input">
+              <span class="cvv-icon" title="3 or 4 digit security code">ℹ️</span>
+            </div>
+            <small class="error-message" *ngIf="cvvError">{{ cvvError }}</small>
+            <small class="hint-message" *ngIf="!cvvError">Test: 123</small>
+          </div>
+        </div>
+
+        <div class="card-input-group">
+          <label for="cardName">Cardholder Name</label>
+          <input 
+            type="text" 
+            id="cardName" 
+            [(ngModel)]="cardDetails.cardName" 
+            (blur)="validateCardName()"
+            name="cardName" 
+            placeholder="John Doe"
+            [class.error]="cardNameError"
+            class="stripe-input">
+          <small class="error-message" *ngIf="cardNameError">{{ cardNameError }}</small>
+        </div>
+
+        <div class="payment-summary">
+          <div class="summary-row">
+            <span>🛡️ Encrypted & Secure</span>
+            <span>✔️ PCI Compliant</span>
+          </div>
         </div>
       </div>
 

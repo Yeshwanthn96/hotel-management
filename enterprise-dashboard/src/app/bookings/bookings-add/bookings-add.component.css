@@ -27,3 +27,176 @@
 .payment-details input {
   background: white;
 }
+
+/* Stripe-like Payment Form Styling */
+.payment-method-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.payment-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.payment-option:hover {
+  border-color: #635bff;
+  box-shadow: 0 2px 8px rgba(99, 91, 255, 0.1);
+}
+
+.payment-option.selected {
+  border-color: #635bff;
+  background: #f6f9ff;
+}
+
+.payment-option input[type="radio"] {
+  margin: 0;
+}
+
+.payment-icon {
+  font-size: 24px;
+}
+
+.stripe-payment-form {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.stripe-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.secure-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #00a86b;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.card-input-group {
+  margin-bottom: 20px;
+}
+
+.card-input-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #32325d;
+  font-size: 14px;
+}
+
+.stripe-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.stripe-input:focus {
+  outline: none;
+  border-color: #635bff;
+  box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.1);
+}
+
+.stripe-input.error {
+  border-color: #df1b41;
+}
+
+.stripe-input.error:focus {
+  box-shadow: 0 0 0 3px rgba(223, 27, 65, 0.1);
+}
+
+.card-number-wrapper {
+  position: relative;
+}
+
+.card-brand {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.card-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.cvv-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  cursor: help;
+}
+
+.error-message {
+  display: block;
+  color: #df1b41;
+  font-size: 13px;
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+.hint-message {
+  display: block;
+  color: #8898aa;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.payment-summary {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: #8898aa;
+  font-weight: 500;
+}
+
+.summary-row span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+@media (max-width: 768px) {
+  .card-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .payment-method-selector {
+    grid-template-columns: 1fr;
+  }
+}
