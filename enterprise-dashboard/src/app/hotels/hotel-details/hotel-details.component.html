@@ -128,11 +128,11 @@
           <div class="room-pricing">
             <div class="price">
               <span class="price-label">Price per night:</span>
-              <span class="price-value">${{ room.pricePerNight }}</span>
+              <span class="price-value">₹{{ room.pricePerNight }}</span>
             </div>
             <div *ngIf="hasRoomSearchParams() && searchParams.checkIn && searchParams.checkOut" class="total-price">
               <span class="total-label">Total ({{ calculateNights() }} nights):</span>
-              <span class="total-value">${{ getTotalPrice(room) }}</span>
+              <span class="total-value">₹{{ getTotalPrice(room) }}</span>
             </div>
           </div>
           

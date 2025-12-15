@@ -34,13 +34,16 @@
         <tr *ngFor="let payment of payments">
           <td>{{ payment.id }}</td>
           <td>{{ payment.bookingId }}</td>
-          <td class="amount">${{ payment.amount }}</td>
+          <td class="amount">₹{{ payment.amount }}</td>
           <td>{{ payment.paymentMethod }}</td>
           <td>
             <span [class]="getStatusClass(payment.status)">{{ payment.status }}</span>
           </td>
           <td>{{ payment.createdAt | date: 'MMM d, y h:mm a' }}</td>
           <td>
+            <button class="btn-icon" (click)="viewDetails(payment.id)" title="View Details">
+              👁️
+            </button>
             <button class="btn-icon" (click)="downloadReceipt(payment.id)" title="Download Receipt">
               📥
             </button>

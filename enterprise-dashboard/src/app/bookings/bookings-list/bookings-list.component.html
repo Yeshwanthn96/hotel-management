@@ -41,7 +41,7 @@
             <td>{{booking.checkInDate | date:'short'}}</td>
             <td>{{booking.checkOutDate | date:'short'}}</td>
             <td>{{booking.numberOfGuests}}</td>
-            <td>${{booking.totalAmount}}</td>
+            <td>₹{{booking.totalAmount}}</td>
             <td>
               <span [class]="'badge badge-' + getStatusBadgeClass(booking.status || '')">
                 {{booking.status}}

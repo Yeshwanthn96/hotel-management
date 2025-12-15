@@ -52,6 +52,10 @@ export class UserPaymentsComponent implements OnInit {
     return statusMap[status] || 'status-pending';
   }
 
+  viewDetails(paymentId: string) {
+    this.router.navigate(['/payments/details', paymentId]);
+  }
+
   downloadReceipt(paymentId: string) {
     alert('Receipt download functionality to be implemented');
   }

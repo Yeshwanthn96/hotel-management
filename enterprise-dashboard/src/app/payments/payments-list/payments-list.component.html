@@ -22,7 +22,7 @@
           <tr *ngFor="let payment of payments">
             <td>{{payment.id}}</td>
             <td>{{payment.bookingId}}</td>
-            <td>${{payment.amount}}</td>
+            <td>₹{{payment.amount}}</td>
             <td>{{payment.paymentMethod}}</td>
             <td>
               <span [class]="'badge badge-' + (payment.status === 'COMPLETED' ? 'success' : payment.status === 'FAILED' ? 'danger' : 'warning')">

@@ -1,0 +1,63 @@
+<div class="payment-details-container">
+  <div class="page-header">
+    <button class="btn-back" (click)="goBack()">← Back to Payments</button>
+    <h1>Payment Details</h1>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    <p>Loading payment details...</p>
+  </div>
+
+  <div *ngIf="!isLoading && errorMessage" class="alert alert-error">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="!isLoading && payment" class="payment-details-card">
+    <div class="detail-section">
+      <h2>Payment Information</h2>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <label>Payment ID:</label>
+          <span>{{ payment.id }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Booking ID:</label>
+          <span>{{ payment.bookingId }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Amount:</label>
+          <span class="amount">₹{{ payment.amount }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Payment Method:</label>
+          <span>{{ payment.paymentMethod }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Status:</label>
+          <span [class]="getStatusClass(payment.status)">{{ payment.status }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Transaction ID:</label>
+          <span>{{ payment.transactionId || 'N/A' }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Payment Date:</label>
+          <span>{{ payment.createdAt | date: 'MMM d, y h:mm a' }}</span>
+        </div>
+        <div class="detail-item" *ngIf="payment.updatedAt">
+          <label>Last Updated:</label>
+          <span>{{ payment.updatedAt | date: 'MMM d, y h:mm a' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-actions">
+      <button class="btn btn-primary" (click)="downloadReceipt()">
+        📥 Download Receipt
+      </button>
+      <button class="btn btn-secondary" (click)="goBack()">
+        Back to List
+      </button>
+    </div>
+  </div>
+</div>

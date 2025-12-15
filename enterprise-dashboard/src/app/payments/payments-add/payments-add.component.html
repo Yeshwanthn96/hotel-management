@@ -129,7 +129,7 @@
                 [style.opacity]="(!isFormValid() || isProcessing) ? '0.6' : '1'"
                 [style.cursor]="(!isFormValid() || isProcessing) ? 'not-allowed' : 'pointer'"
                 style="font-size: 16px; padding: 12px 32px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-          <span *ngIf="!isProcessing">💳 Pay ${{payment.amount || '0.00'}}</span>
+          <span *ngIf="!isProcessing">💳 Pay ₹{{payment.amount || '0.00'}}</span>
           <span *ngIf="isProcessing">⏳ Processing...</span>
         </button>
         <button type="button" routerLink="/payments" class="btn btn-secondary" [disabled]="isProcessing">

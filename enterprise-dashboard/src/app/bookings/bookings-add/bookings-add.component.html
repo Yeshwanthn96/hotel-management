@@ -15,7 +15,7 @@
         <select id="room" [(ngModel)]="booking.roomId" name="room" [disabled]="!booking.hotelId" required>
           <option value="">Select room</option>
           <option *ngFor="let r of rooms" [value]="r.id">
-            Room {{r.roomNumber}} - {{r.type}} (${{r.price}}/night)
+            Room {{r.roomNumber}} - {{r.type}} (₹{{r.price}}/night)
           </option>
         </select>
       </div>
