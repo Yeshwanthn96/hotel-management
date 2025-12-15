@@ -35,7 +35,8 @@ export class LoginComponent {
       .subscribe({
         next: () => {
           this.isLoading = false;
-          this.router.navigate(['/dashboard']);
+          // Redirect to hotels page after login
+          this.router.navigate(['/hotels']);
         },
         error: (error) => {
           this.isLoading = false;

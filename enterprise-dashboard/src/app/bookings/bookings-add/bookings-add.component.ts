@@ -33,12 +33,13 @@ export class BookingsAddComponent implements OnInit {
   ) {}
   
   ngOnInit(): void {
-    this.userId = this.authService.getUserId();
-    if (!this.userId) {
+    // Check if user is authenticated
+    if (!this.authService.isAuthenticated()) {
       alert('Please login to make a booking');
-      this.router.navigate(['/login']);
+      this.router.navigate(['/auth/login']);
       return;
     }
+    this.userId = this.authService.getUserId();
     this.loadHotels();
     
     // Pre-fill if coming from hotel details
@@ -63,9 +64,9 @@ export class BookingsAddComponent implements OnInit {
   }
   
   createBooking() {
-    if (!this.userId) {
+    if (!this.authService.isAuthenticated() || !this.userId) {
       alert('Please login to make a booking');
-      this.router.navigate(['/login']);
+      this.router.navigate(['/auth/login']);
       return;
     }
     
