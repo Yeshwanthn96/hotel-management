@@ -1,0 +1,108 @@
+<div class="booking-details-container">
+  <div class="page-header">
+    <button class="btn-back" (click)="goBack()">← Back to My Bookings</button>
+    <h1>Booking Details</h1>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    <p>Loading booking details...</p>
+  </div>
+
+  <div *ngIf="!isLoading && errorMessage" class="alert alert-error">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="!isLoading && booking" class="booking-details-card">
+    <div class="status-banner" [class]="getStatusClass(booking.status)">
+      <h2>{{ booking.status }}</h2>
+    </div>
+
+    <div class="detail-section">
+      <h2>📋 Booking Information</h2>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <label>Booking ID:</label>
+          <span>{{ booking.id }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Status:</label>
+          <span [class]="getStatusClass(booking.status)">{{ booking.status }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Booking Date:</label>
+          <span>{{ booking.createdAt | date: 'MMM d, y h:mm a' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h2>🏨 Hotel Information</h2>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <label>Hotel Name:</label>
+          <span>{{ booking.hotelName }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Room Type:</label>
+          <span>{{ booking.roomType }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Room Number:</label>
+          <span>{{ booking.roomNumber || 'TBA' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h2>📅 Stay Details</h2>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <label>Check-in Date:</label>
+          <span>{{ booking.checkInDate | date: 'EEEE, MMMM d, y' }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Check-out Date:</label>
+          <span>{{ booking.checkOutDate | date: 'EEEE, MMMM d, y' }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Number of Guests:</label>
+          <span>{{ booking.numberOfGuests }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Duration:</label>
+          <span>{{ calculateDuration(booking.checkInDate, booking.checkOutDate) }} night(s)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h2>💰 Payment Information</h2>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <label>Total Amount:</label>
+          <span class="amount">₹{{ booking.totalAmount }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Payment Method:</label>
+          <span>{{ booking.paymentMethod || 'N/A' }}</span>
+        </div>
+        <div class="detail-item" *ngIf="booking.paymentStatus">
+          <label>Payment Status:</label>
+          <span [class]="getStatusClass(booking.paymentStatus)">{{ booking.paymentStatus }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-actions">
+      <button class="btn btn-primary" (click)="goBack()">
+        Back to My Bookings
+      </button>
+      <button 
+        *ngIf="booking.status === 'CONFIRMED' || booking.status === 'PENDING' || booking.status === 'PAYMENT_PENDING'" 
+        class="btn btn-danger" 
+        (click)="cancelBooking()">
+        Cancel Booking
+      </button>
+    </div>
+  </div>
+</div>
