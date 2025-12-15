@@ -1,0 +1,29 @@
+.payment-details {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 15px 0;
+  border: 1px solid #dee2e6;
+}
+
+.payment-details h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.payment-details .form-group {
+  margin-bottom: 15px;
+}
+
+.payment-details small {
+  display: block;
+  margin-top: 5px;
+  color: #666;
+  font-size: 12px;
+}
+
+.payment-details input {
+  background: white;
+}

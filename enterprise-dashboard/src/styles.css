@@ -54,6 +54,12 @@ nav a:hover {
   border-bottom-color: #d4af37;
 }
 
+nav a.active {
+  color: #d4af37;
+  border-bottom-color: #d4af37;
+  font-weight: 600;
+}
+
 .login-btn {
   background: #d4af37;
   color: #1a1a1a;

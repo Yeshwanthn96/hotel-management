@@ -105,6 +105,30 @@ tbody tr:hover {
   display: inline-block;
 }
 
+.btn-icon {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 8px;
+  transition: transform 0.2s;
+  margin: 0 4px;
+}
+
+.btn-icon:hover {
+  transform: scale(1.2);
+}
+
+.btn-icon:active {
+  transform: scale(0.95);
+}
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
 .status-failed {
   background: #ef4444;
   color: white;

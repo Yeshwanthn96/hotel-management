@@ -7,7 +7,8 @@ import { AuthService } from '../../auth/auth.service';
 
 @Component({
   selector: 'app-bookings-add',
-  templateUrl: './bookings-add.component.html'
+  templateUrl: './bookings-add.component.html',
+  styleUrls: ['./bookings-add.component.css']
 })
 export class BookingsAddComponent implements OnInit {
   hotels: Hotel[] = [];
@@ -20,7 +21,19 @@ export class BookingsAddComponent implements OnInit {
     checkInDate: '',
     checkOutDate: '',
     numberOfGuests: 1,
-    paymentMethod: 'MOCK'  // Always use MOCK payment for testing
+    paymentMethod: 'STRIPE'  // Default to STRIPE
+  };
+
+  cardDetails = {
+    cardNumber: '',
+    expiry: '',
+    cvv: '',
+    cardName: ''
+  };
+
+  paypalDetails = {
+    email: '',
+    password: ''
   };
   
   constructor(
@@ -74,6 +87,33 @@ export class BookingsAddComponent implements OnInit {
       alert('Please fill all required fields');
       return;
     }
+
+    // Validate payment details
+    if (this.booking.paymentMethod === 'STRIPE') {
+      if (!this.cardDetails.cardNumber || !this.cardDetails.expiry || !this.cardDetails.cvv || !this.cardDetails.cardName) {
+        alert('Please fill in all credit card details');
+        return;
+      }
+      // Mock validation - accept test card
+      if (this.cardDetails.cardNumber.replace(/\s/g, '') !== '4242424242424242') {
+        alert('Invalid card number. Use test card: 4242 4242 4242 4242');
+        return;
+      }
+      if (this.cardDetails.cvv !== '123') {
+        alert('Invalid CVV. Use test CVV: 123');
+        return;
+      }
+    } else if (this.booking.paymentMethod === 'PAYPAL') {
+      if (!this.paypalDetails.email || !this.paypalDetails.password) {
+        alert('Please fill in all PayPal details');
+        return;
+      }
+      // Mock validation - accept test credentials
+      if (this.paypalDetails.email !== 'test@paypal.com' || this.paypalDetails.password !== 'password123') {
+        alert('Invalid PayPal credentials. Use test@paypal.com / password123');
+        return;
+      }
+    }
     
     const request: BookingRequest = {
       userId: this.userId,
@@ -82,12 +122,15 @@ export class BookingsAddComponent implements OnInit {
       checkInDate: this.booking.checkInDate,
       checkOutDate: this.booking.checkOutDate,
       numberOfGuests: this.booking.numberOfGuests,
-      paymentMethod: this.booking.paymentMethod
+      paymentMethod: 'MOCK'  // Backend still uses MOCK for testing
     };
     
     this.bookingService.createBooking(request).subscribe({
       next: (result) => {
-        alert(`Booking created! Status: ${result.status}. ${result.message || ''}`);
+        const paymentInfo = this.booking.paymentMethod === 'STRIPE' 
+          ? `Card ending in ${this.cardDetails.cardNumber.slice(-4)}` 
+          : `PayPal (${this.paypalDetails.email})`;
+        alert(`Booking created successfully!\nPayment Method: ${paymentInfo}\nStatus: ${result.status}`);
         this.router.navigate(['/bookings']);
       },
       error: (err) => alert(`Booking failed: ${err.error?.message || err.message}`)

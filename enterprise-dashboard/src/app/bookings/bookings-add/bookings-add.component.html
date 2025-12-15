@@ -39,14 +39,58 @@
         <label>Payment Method *</label>
         <div style="display: flex; gap: 15px; margin-top: 8px;">
           <label style="cursor: pointer;">
-            <input type="radio" [(ngModel)]="booking.paymentMethod" name="payment" value="STRIPE"> Stripe
+            <input type="radio" [(ngModel)]="booking.paymentMethod" name="payment" value="STRIPE"> Credit Card
           </label>
           <label style="cursor: pointer;">
             <input type="radio" [(ngModel)]="booking.paymentMethod" name="payment" value="PAYPAL"> PayPal
           </label>
-          <label style="cursor: pointer;">
-            <input type="radio" [(ngModel)]="booking.paymentMethod" name="payment" value="MOCK"> Mock
-          </label>
+        </div>
+      </div>
+
+      <!-- Credit Card Payment Details -->
+      <div *ngIf="booking.paymentMethod === 'STRIPE'" class="payment-details">
+        <h3 style="margin: 20px 0 15px; color: #333; font-size: 18px;">Credit Card Details</h3>
+        <div class="form-group">
+          <label for="cardNumber">Card Number *</label>
+          <input type="text" id="cardNumber" [(ngModel)]="cardDetails.cardNumber" 
+                 name="cardNumber" placeholder="4242 4242 4242 4242" maxlength="19">
+          <small style="color: #666;">Test card: 4242 4242 4242 4242</small>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+          <div class="form-group">
+            <label for="expiry">Expiry Date *</label>
+            <input type="text" id="expiry" [(ngModel)]="cardDetails.expiry" 
+                   name="expiry" placeholder="MM/YY" maxlength="5">
+            <small style="color: #666;">Test: 12/25</small>
+          </div>
+          <div class="form-group">
+            <label for="cvv">CVV *</label>
+            <input type="text" id="cvv" [(ngModel)]="cardDetails.cvv" 
+                   name="cvv" placeholder="123" maxlength="3">
+            <small style="color: #666;">Test: 123</small>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="cardName">Cardholder Name *</label>
+          <input type="text" id="cardName" [(ngModel)]="cardDetails.cardName" 
+                 name="cardName" placeholder="John Doe">
+        </div>
+      </div>
+
+      <!-- PayPal Payment Details -->
+      <div *ngIf="booking.paymentMethod === 'PAYPAL'" class="payment-details">
+        <h3 style="margin: 20px 0 15px; color: #333; font-size: 18px;">PayPal Login</h3>
+        <div class="form-group">
+          <label for="paypalEmail">PayPal Email *</label>
+          <input type="email" id="paypalEmail" [(ngModel)]="paypalDetails.email" 
+                 name="paypalEmail" placeholder="test@paypal.com">
+          <small style="color: #666;">Test email: test@paypal.com</small>
+        </div>
+        <div class="form-group">
+          <label for="paypalPassword">PayPal Password *</label>
+          <input type="password" id="paypalPassword" [(ngModel)]="paypalDetails.password" 
+                 name="paypalPassword" placeholder="password">
+          <small style="color: #666;">Test password: password123</small>
         </div>
       </div>
       
