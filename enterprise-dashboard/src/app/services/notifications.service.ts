@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class NotificationsService {
-  base = 'http://localhost:8080/api/notifications';
+  base = '/api/notifications';
   constructor(private http: HttpClient) {}
   list(): Observable<any> { return this.http.get(this.base); }
   add(data:any): Observable<any> { return this.http.post(this.base, data); }

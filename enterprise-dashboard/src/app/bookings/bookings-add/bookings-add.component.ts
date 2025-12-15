@@ -20,7 +20,7 @@ export class BookingsAddComponent implements OnInit {
     checkInDate: '',
     checkOutDate: '',
     numberOfGuests: 1,
-    paymentMethod: 'MOCK'
+    paymentMethod: 'MOCK'  // Always use MOCK payment for testing
   };
   
   constructor(
