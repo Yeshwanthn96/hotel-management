@@ -31,9 +31,14 @@ import { Router } from '@angular/router';
              (click)="markAsRead(notification)">
           <div class="notification-icon">
             <span *ngIf="notification.type === 'BOOKING_CONFIRMED'">✅</span>
+            <span *ngIf="notification.type === 'BOOKING_APPROVED'">✅</span>
             <span *ngIf="notification.type === 'BOOKING_REJECTED'">❌</span>
             <span *ngIf="notification.type === 'BOOKING_PENDING'">⏳</span>
             <span *ngIf="notification.type === 'PAYMENT_RECEIVED'">💳</span>
+            <span *ngIf="notification.type === 'info'">ℹ️</span>
+            <span *ngIf="notification.type === 'success'">🎉</span>
+            <span *ngIf="notification.type === 'warning'">⚠️</span>
+            <span *ngIf="notification.type === 'error'">⛔</span>
             <span *ngIf="!notification.type || notification.type === 'GENERAL'">📢</span>
           </div>
           <div class="notification-content">

@@ -14,4 +14,6 @@ public interface UserNotificationRepository extends MongoRepository<UserNotifica
     List<UserNotification> findByUserIdAndReadFalseOrderByCreatedAtDesc(String userId);
 
     long countByUserIdAndReadFalse(String userId);
+
+    List<UserNotification> findByReferenceId(String referenceId);
 }

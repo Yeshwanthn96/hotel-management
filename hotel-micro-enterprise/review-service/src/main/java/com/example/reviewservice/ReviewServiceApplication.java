@@ -16,6 +16,11 @@ public class ReviewServiceApplication {
         return new RestTemplate();
     }
 
+    @Bean("directRestTemplate")
+    public RestTemplate directRestTemplate() {
+        return new RestTemplate();
+    }
+
     public static void main(String[] args) {
         SpringApplication.run(ReviewServiceApplication.class, args);
     }

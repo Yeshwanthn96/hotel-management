@@ -17,12 +17,10 @@ public class Review {
     private int rating; // 1-5
     private String title;
     private String comment;
-    private String status; // PENDING_APPROVAL, APPROVED, REJECTED
-    private String rejectionReason;
     private String adminReply;
-    private String approvedBy; // Admin ID who approved
+    private String userReply; // User's response to admin reply
     private LocalDateTime createdAt;
-    private LocalDateTime approvedAt;
+    private LocalDateTime updatedAt;
     private boolean verified; // Only guests who stayed can review
     private int helpfulCount; // How many users found this helpful
     private boolean reported;
@@ -30,8 +28,8 @@ public class Review {
 
     public Review() {
         this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
         this.verified = false;
-        this.status = "PENDING_APPROVAL";
         this.helpfulCount = 0;
         this.reported = false;
         this.reportCount = 0;
@@ -129,44 +127,30 @@ public class Review {
         this.hotelName = hotelName;
     }
 
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getRejectionReason() {
-        return rejectionReason;
-    }
-
-    public void setRejectionReason(String rejectionReason) {
-        this.rejectionReason = rejectionReason;
-    }
-
     public String getAdminReply() {
         return adminReply;
     }
 
     public void setAdminReply(String adminReply) {
         this.adminReply = adminReply;
+        this.updatedAt = LocalDateTime.now();
     }
 
-    public String getApprovedBy() {
-        return approvedBy;
+    public String getUserReply() {
+        return userReply;
     }
 
-    public void setApprovedBy(String approvedBy) {
-        this.approvedBy = approvedBy;
+    public void setUserReply(String userReply) {
+        this.userReply = userReply;
+        this.updatedAt = LocalDateTime.now();
     }
 
-    public LocalDateTime getApprovedAt() {
-        return approvedAt;
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 
-    public void setApprovedAt(LocalDateTime approvedAt) {
-        this.approvedAt = approvedAt;
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     public int getHelpfulCount() {

@@ -5,16 +5,21 @@ import { Observable } from 'rxjs';
 export interface Review {
   id?: string;
   userId: string;
+  userName?: string;
   hotelId: string;
+  hotelName?: string;
   bookingId?: string;
   rating: number;
-  title: string;
+  title?: string;
   comment: string;
-  status?: string;
   createdAt?: string;
+  updatedAt?: string;
   verified?: boolean;
   adminReply?: string;
-  adminReplyAt?: string;
+  userReply?: string;
+  helpfulCount?: number;
+  reported?: boolean;
+  reportCount?: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -25,6 +30,10 @@ export class ReviewsService {
   
   createReview(review: Review): Observable<Review> {
     return this.http.post<Review>(this.base, review);
+  }
+
+  updateReview(id: string, review: Partial<Review>): Observable<Review> {
+    return this.http.put<Review>(`${this.base}/${id}`, review);
   }
   
   getReview(id: string): Observable<Review> {
@@ -55,11 +64,11 @@ export class ReviewsService {
     return this.http.get<string[]>(`${this.base}/user/${userId}/eligible-hotels`);
   }
   
-  approveReview(id: string): Observable<Review> {
-    return this.http.put<Review>(`${this.base}/${id}/approve`, {});
+  addAdminReply(reviewId: string, reply: string): Observable<Review> {
+    return this.http.post<Review>(`${this.base}/${reviewId}/reply`, { reply });
   }
   
-  rejectReview(id: string): Observable<Review> {
-    return this.http.put<Review>(`${this.base}/${id}/reject`, {});
+  addUserReply(reviewId: string, userReply: string): Observable<Review> {
+    return this.http.post<Review>(`${this.base}/${reviewId}/user-reply`, { userReply });
   }
 }

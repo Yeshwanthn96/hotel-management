@@ -199,6 +199,15 @@ public class BookingService {
         booking.setCancellationReason(null);
         bookingRepository.save(booking);
 
+        // Send notification to user
+        sendNotificationToUser(
+                booking.getUserId(),
+                "BOOKING_APPROVED",
+                "Booking Approved! ✅",
+                "Great news! Your booking #" + booking.getId().substring(0, 8)
+                        + " has been approved by admin. You can now proceed with the payment.",
+                booking.getId());
+
         BookingResponse response = new BookingResponse(booking);
         response.setMessage("Booking resumed from hold");
         return response;
@@ -235,6 +244,84 @@ public class BookingService {
 
         BookingResponse response = new BookingResponse(booking);
         response.setMessage("Booking rejected and refund initiated: " + reason);
+        return response;
+    }
+
+    public BookingResponse markStayCompleted(String bookingId) {
+        logger.info("Marking stay as completed for booking: {}", bookingId);
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        if (booking.getStatus() != BookingStatus.CONFIRMED && booking.getStatus() != BookingStatus.COMPLETED) {
+            throw new RuntimeException("Only confirmed or completed bookings can be marked as stay completed");
+        }
+
+        booking.setStatus(BookingStatus.STAY_COMPLETED);
+        bookingRepository.save(booking);
+
+        // Send notification to user
+        sendNotificationToUser(
+                booking.getUserId(),
+                "STAY_COMPLETED",
+                "Thank You for Your Stay! 🌟",
+                "We hope you enjoyed your stay! Please share your experience by writing a review for booking #"
+                        + booking.getId().substring(0, 8),
+                booking.getId());
+
+        BookingResponse response = new BookingResponse(booking);
+        response.setMessage("Stay completed - User can now write a review");
+        return response;
+    }
+
+    public BookingResponse updateBookingStatus(String bookingId, String statusString) {
+        logger.info("Admin updating booking {} to status: {}", bookingId, statusString);
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        // Parse and validate the status
+        BookingStatus newStatus;
+        try {
+            newStatus = BookingStatus.valueOf(statusString.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid status: " + statusString + ". Valid statuses: " +
+                    String.join(", ", java.util.Arrays.stream(BookingStatus.values())
+                            .map(Enum::name)
+                            .toArray(String[]::new)));
+        }
+
+        BookingStatus oldStatus = booking.getStatus();
+        booking.setStatus(newStatus);
+        bookingRepository.save(booking);
+
+        // Send notification based on new status
+        String notificationTitle = "Booking Status Updated";
+        String notificationMessage = "Your booking #" + booking.getId().substring(0, 8) +
+                " status has been changed from " + oldStatus + " to " + newStatus;
+
+        if (newStatus == BookingStatus.STAY_COMPLETED) {
+            notificationTitle = "Thank You for Your Stay! 🌟";
+            notificationMessage = "We hope you enjoyed your stay! Please share your experience by writing a review for booking #"
+                    + booking.getId().substring(0, 8);
+        } else if (newStatus == BookingStatus.CONFIRMED) {
+            notificationTitle = "Booking Confirmed ✅";
+            notificationMessage = "Great news! Your booking #" + booking.getId().substring(0, 8)
+                    + " has been confirmed.";
+        } else if (newStatus == BookingStatus.CANCELLED) {
+            notificationTitle = "Booking Cancelled ❌";
+            notificationMessage = "Your booking #" + booking.getId().substring(0, 8) + " has been cancelled.";
+        }
+
+        sendNotificationToUser(
+                booking.getUserId(),
+                newStatus.name(),
+                notificationTitle,
+                notificationMessage,
+                booking.getId());
+
+        BookingResponse response = new BookingResponse(booking);
+        response.setMessage("Booking status updated from " + oldStatus + " to " + newStatus);
         return response;
     }
 
@@ -302,13 +389,12 @@ public class BookingService {
 
     /**
      * Get list of unique hotel IDs where user has completed stays
-     * Only returns hotels where checkout date has passed
+     * Returns hotels with STAY_COMPLETED status (eligible for reviews)
      */
     public List<String> getCompletedHotelsForUser(String userId) {
-        LocalDate today = LocalDate.now();
         return bookingRepository.findByUserId(userId).stream()
-                .filter(booking -> booking.getStatus() == BookingStatus.CONFIRMED)
-                .filter(booking -> booking.getCheckOutDate().isBefore(today))
+                .filter(booking -> booking.getStatus() == BookingStatus.STAY_COMPLETED ||
+                        booking.getStatus() == BookingStatus.COMPLETED)
                 .map(Booking::getHotelId)
                 .distinct()
                 .collect(Collectors.toList());

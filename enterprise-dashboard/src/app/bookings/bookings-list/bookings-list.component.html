@@ -101,16 +101,26 @@
                 </button>
               </div>
               <!-- User Actions -->
-              <button 
-                *ngIf="!authService.isAdmin() && booking.status !== 'CANCELLED' && booking.status !== 'REJECTED' && booking.status !== 'COMPLETED'"
-                (click)="cancelBooking(booking)" 
-                class="btn btn-danger" 
-                style="padding: 6px 12px;">
-                Cancel
-              </button>
-              <span *ngIf="!authService.isAdmin() && (booking.status === 'CANCELLED' || booking.status === 'REJECTED' || booking.status === 'COMPLETED')" style="color: #999;">
-                -
-              </span>
+              <div *ngIf="!authService.isAdmin()" style="display: flex; gap: 5px; flex-wrap: wrap;">
+                <button 
+                  *ngIf="booking.status !== 'CANCELLED' && booking.status !== 'REJECTED' && booking.status !== 'COMPLETED' && booking.status !== 'STAY_COMPLETED'"
+                  (click)="cancelBooking(booking)" 
+                  class="btn btn-danger" 
+                  style="padding: 6px 12px;">
+                  Cancel
+                </button>
+                <button 
+                  *ngIf="booking.status === 'STAY_COMPLETED' || booking.status === 'COMPLETED'"
+                  [routerLink]="['/reviews/add']"
+                  [queryParams]="{hotelId: booking.hotelId, bookingId: booking.id}"
+                  class="btn btn-primary" 
+                  style="padding: 6px 12px;">
+                  ⭐ Write Review
+                </button>
+                <span *ngIf="booking.status === 'CANCELLED' || booking.status === 'REJECTED'" style="color: #999;">
+                  -
+                </span>
+              </div>
             </td>
           </tr>
         </tbody>

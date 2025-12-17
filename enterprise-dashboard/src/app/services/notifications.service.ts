@@ -21,6 +21,12 @@ export class NotificationsService {
   // Admin notification methods
   list(): Observable<any> { return this.http.get(this.base); }
   add(data:any): Observable<any> { return this.http.post(this.base, data); }
+  delete(id: string): Observable<any> { return this.http.delete(`${this.base}/${id}`); }
+  
+  // Send bulk notification to all users
+  sendBulkNotification(data: {title: string, message: string, type: string}): Observable<any> {
+    return this.http.post(`${this.base}/bulk`, data);
+  }
   
   // User notification methods
   getUserNotifications(userId: string): Observable<UserNotification[]> {

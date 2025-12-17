@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HotelService, Hotel } from '../../services/hotel.service';
 import { RoomService, Room, RoomSearchParams } from '../../services/room.service';
+import { ReviewsService, Review } from '../../services/reviews.service';
 import { AuthService } from '../../auth/auth.service';
 
 @Component({
@@ -12,8 +13,10 @@ import { AuthService } from '../../auth/auth.service';
 export class HotelDetailsComponent implements OnInit {
   hotel: Hotel | null = null;
   rooms: Room[] = [];
+  reviews: Review[] = [];
   loading = false;
   error = '';
+  averageRating: number = 0;
   
   searchParams: RoomSearchParams = {};
   showRoomFilters = false;
@@ -23,6 +26,7 @@ export class HotelDetailsComponent implements OnInit {
     private router: Router,
     private hotelService: HotelService,
     private roomService: RoomService,
+    private reviewService: ReviewsService,
     public authService: AuthService
   ) {}
   
@@ -31,6 +35,7 @@ export class HotelDetailsComponent implements OnInit {
     if (hotelId) {
       this.loadHotel(hotelId);
       this.loadRooms(hotelId);
+      this.loadReviews(hotelId);
     }
   }
   
@@ -176,5 +181,33 @@ export class HotelDetailsComponent implements OnInit {
   
   getRoomImage(roomType: string): string {
     return this.getRoomImageByIndex(roomType, 0);
+  }
+
+  loadReviews(hotelId: string) {
+    this.reviewService.getHotelReviews(hotelId).subscribe({
+      next: (reviews) => {
+        this.reviews = reviews;
+        this.calculateAverageRating();
+      },
+      error: (err) => console.error('Failed to load reviews:', err)
+    });
+  }
+
+  calculateAverageRating() {
+    if (this.reviews.length === 0) {
+      this.averageRating = 0;
+      return;
+    }
+    const sum = this.reviews.reduce((acc, review) => acc + review.rating, 0);
+    this.averageRating = Math.round((sum / this.reviews.length) * 10) / 10;
+  }
+
+  getStars(rating: number): string {
+    return '⭐'.repeat(Math.round(rating));
+  }
+
+  canWriteReview(): boolean {
+    // User can write review if logged in and not admin
+    return this.authService.isAuthenticated() && !this.authService.isAdmin();
   }
 }

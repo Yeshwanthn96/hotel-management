@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { BookingsService } from '../bookings.service';
 import { AuthService } from '../../auth/auth.service';
+import { ReviewsService } from '../../services/reviews.service';
 
 @Component({
   selector: 'app-user-bookings',
@@ -13,22 +14,39 @@ export class UserBookingsComponent implements OnInit {
   isLoading = true;
   errorMessage = '';
   currentUser: any;
+  reviewedHotelIds: Set<string> = new Set();
 
   constructor(
     private bookingsService: BookingsService,
     private authService: AuthService,
+    private reviewsService: ReviewsService,
     private router: Router
   ) {}
 
   ngOnInit() {
     this.currentUser = this.authService.getCurrentUser();
     if (this.currentUser) {
-      this.loadUserBookings();
+      this.loadUserData();
     }
   }
 
-  loadUserBookings() {
+  loadUserData() {
     this.isLoading = true;
+    
+    // Load user reviews first to know which hotels have been reviewed
+    this.reviewsService.getUserReviews(this.currentUser.id).subscribe({
+      next: (reviews) => {
+        this.reviewedHotelIds = new Set(reviews.map(r => r.hotelId));
+        this.loadUserBookings();
+      },
+      error: () => {
+        // If reviews fail to load, still load bookings
+        this.loadUserBookings();
+      }
+    });
+  }
+
+  loadUserBookings() {
     // Load only bookings for the current user
     this.bookingsService.getUserBookings(this.currentUser.id).subscribe({
       next: (data) => {
@@ -42,11 +60,16 @@ export class UserBookingsComponent implements OnInit {
     });
   }
 
+  hasReviewedHotel(hotelId: string): boolean {
+    return this.reviewedHotelIds.has(hotelId);
+  }
+
   getStatusClass(status: string): string {
     const statusMap: any = {
       'CONFIRMED': 'status-confirmed',
       'PENDING': 'status-pending',
       'CANCELLED': 'status-cancelled',
+      'STAY_COMPLETED': 'status-completed',
       'COMPLETED': 'status-completed'
     };
     return statusMap[status] || 'status-pending';

@@ -3,7 +3,9 @@ package com.example.reviewservice.service;
 import com.example.reviewservice.model.Review;
 import com.example.reviewservice.repository.ReviewRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -15,6 +17,12 @@ public class ReviewService {
     @Autowired
     private ReviewRepository reviewRepository;
 
+    @Autowired
+    @Qualifier("directRestTemplate")
+    private RestTemplate restTemplate;
+
+    private static final String NOTIFICATION_SERVICE_URL = "http://localhost:8095/api/notifications";
+
     public Review createReview(Review review) {
         return reviewRepository.save(review);
     }
@@ -24,10 +32,8 @@ public class ReviewService {
     }
 
     public List<Review> getHotelReviews(String hotelId) {
-        // Only return approved reviews for public view
-        return reviewRepository.findByHotelId(hotelId).stream()
-                .filter(review -> "APPROVED".equals(review.getStatus()))
-                .collect(Collectors.toList());
+        // Return all reviews (no status filtering needed)
+        return reviewRepository.findByHotelId(hotelId);
     }
 
     public List<Review> getUserReviews(String userId) {
@@ -39,40 +45,80 @@ public class ReviewService {
     }
 
     public void deleteReview(String id) {
-        reviewRepository.deleteById(id);
-    }
+        // Get the review to find associated notification
+        reviewRepository.findById(id).ifPresent(review -> {
+            // Delete the review
+            reviewRepository.deleteById(id);
 
-    public Optional<Review> approveReview(String id, String adminId) {
-        return reviewRepository.findById(id).map(review -> {
-            review.setStatus("APPROVED");
-            review.setVerified(true);
-            review.setApprovedBy(adminId);
-            review.setApprovedAt(LocalDateTime.now());
-            return reviewRepository.save(review);
-        });
-    }
-
-    public Optional<Review> rejectReview(String id, String reason) {
-        return reviewRepository.findById(id).map(review -> {
-            review.setStatus("REJECTED");
-            review.setRejectionReason(reason);
-            review.setVerified(false);
-            return reviewRepository.save(review);
+            // Delete associated REVIEW_REPLY notifications
+            deleteReviewNotifications(id);
         });
     }
 
     public Optional<Review> addAdminReply(String id, String reply) {
         return reviewRepository.findById(id).map(review -> {
             review.setAdminReply(reply);
+            review.setUpdatedAt(LocalDateTime.now());
+            Review savedReview = reviewRepository.save(review);
+
+            // Send notification to user
+            sendNotificationToUser(savedReview);
+
+            return savedReview;
+        });
+    }
+
+    public Optional<Review> addUserReply(String id, String userReply) {
+        return reviewRepository.findById(id).map(review -> {
+            review.setUserReply(userReply);
+            review.setUpdatedAt(LocalDateTime.now());
             return reviewRepository.save(review);
         });
     }
 
-    public List<Review> getPendingReviews() {
-        return reviewRepository.findAll().stream()
-                .filter(review -> "PENDING_APPROVAL".equals(review.getStatus()))
-                .sorted(Comparator.comparing(Review::getCreatedAt))
-                .collect(Collectors.toList());
+    /**
+     * Send notification to user when hotel replies to their review
+     */
+    private void sendNotificationToUser(Review review) {
+        try {
+            Map<String, String> notificationRequest = new HashMap<>();
+            notificationRequest.put("userId", review.getUserId());
+            notificationRequest.put("type", "REVIEW_REPLY");
+            notificationRequest.put("title", "Hotel Replied to Your Review");
+            notificationRequest.put("message", "The hotel has responded to your review. Check it out!");
+            notificationRequest.put("referenceId", review.getId());
+
+            restTemplate.postForEntity(
+                    NOTIFICATION_SERVICE_URL,
+                    notificationRequest,
+                    String.class);
+        } catch (Exception e) {
+            // Log error but don't fail the review reply operation
+            System.err.println("Failed to send notification: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Delete notifications associated with a review
+     */
+    private void deleteReviewNotifications(String reviewId) {
+        try {
+            String deleteUrl = NOTIFICATION_SERVICE_URL + "/reference/" + reviewId;
+            restTemplate.delete(deleteUrl);
+        } catch (Exception e) {
+            // Log error but don't fail the review deletion
+            System.err.println("Failed to delete notifications: " + e.getMessage());
+        }
+    }
+
+    public Optional<Review> updateReview(String id, Review updatedReview) {
+        return reviewRepository.findById(id).map(review -> {
+            review.setTitle(updatedReview.getTitle());
+            review.setComment(updatedReview.getComment());
+            review.setRating(updatedReview.getRating());
+            review.setUpdatedAt(LocalDateTime.now());
+            return reviewRepository.save(review);
+        });
     }
 
     /**

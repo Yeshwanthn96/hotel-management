@@ -162,6 +162,39 @@ public class BookingController {
         }
     }
 
+    @PutMapping("/{id}/complete-stay")
+    public ResponseEntity<BookingResponse> markStayCompleted(@PathVariable String id) {
+        try {
+            logger.info("Marking stay as completed for booking: {}", id);
+            BookingResponse response = bookingService.markStayCompleted(id);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Error marking stay as completed: {}", e.getMessage());
+            BookingResponse errorResponse = new BookingResponse();
+            errorResponse.setMessage("Failed to mark stay as completed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
+    /**
+     * Admin endpoint to manually change booking status
+     */
+    @PutMapping("/{id}/status")
+    public ResponseEntity<BookingResponse> updateBookingStatus(
+            @PathVariable String id,
+            @RequestParam String status) {
+        try {
+            logger.info("Admin updating booking {} to status: {}", id, status);
+            BookingResponse response = bookingService.updateBookingStatus(id, status);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Error updating booking status: {}", e.getMessage());
+            BookingResponse errorResponse = new BookingResponse();
+            errorResponse.setMessage("Failed to update status: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
     /**
      * Get list of hotels where user has completed stays (for reviews)
      */

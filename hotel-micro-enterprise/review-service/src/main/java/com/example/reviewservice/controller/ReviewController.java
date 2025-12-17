@@ -11,6 +11,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/reviews")
@@ -27,6 +29,17 @@ public class ReviewController {
 
     @PostMapping
     public ResponseEntity<?> createReview(@RequestBody Review review) {
+        // Check if user already has a review for this hotel
+        List<Review> existingReviews = reviewService.getUserReviews(review.getUserId());
+        boolean alreadyReviewed = existingReviews.stream()
+                .anyMatch(r -> r.getHotelId().equals(review.getHotelId()));
+
+        if (alreadyReviewed) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error",
+                            "You have already reviewed this hotel. You can edit your existing review instead."));
+        }
+
         // Validate that user has stayed at this hotel
         try {
             String url = BOOKING_SERVICE_URL + "/user/" + review.getUserId() + "/completed-hotels";
@@ -52,11 +65,13 @@ public class ReviewController {
     }
 
     /**
-     * Get hotels eligible for review by user (where they have completed stays)
+     * Get hotels eligible for review by user (where they have completed stays but
+     * haven't reviewed yet)
      */
     @GetMapping("/user/{userId}/eligible-hotels")
     public ResponseEntity<?> getEligibleHotelsForReview(@PathVariable String userId) {
         try {
+            // Get all completed hotels
             String url = BOOKING_SERVICE_URL + "/user/" + userId + "/completed-hotels";
             ResponseEntity<List<String>> response = restTemplate.exchange(
                     url,
@@ -64,7 +79,24 @@ public class ReviewController {
                     null,
                     new ParameterizedTypeReference<List<String>>() {
                     });
-            return ResponseEntity.ok(response.getBody());
+
+            List<String> completedHotels = response.getBody();
+            if (completedHotels == null) {
+                return ResponseEntity.ok(List.of());
+            }
+
+            // Get hotels user has already reviewed
+            List<Review> userReviews = reviewService.getUserReviews(userId);
+            Set<String> reviewedHotels = userReviews.stream()
+                    .map(Review::getHotelId)
+                    .collect(Collectors.toSet());
+
+            // Filter out already reviewed hotels
+            List<String> eligibleHotels = completedHotels.stream()
+                    .filter(hotelId -> !reviewedHotels.contains(hotelId))
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(eligibleHotels);
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(Map.of("error", "Unable to fetch eligible hotels: " + e.getMessage()));
@@ -100,39 +132,24 @@ public class ReviewController {
     }
 
     /**
-     * Approve a review (Admin only)
+     * Update a review (User can update their own review)
      */
-    @PutMapping("/{id}/approve")
-    public ResponseEntity<?> approveReview(
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateReview(
             @PathVariable String id,
-            @RequestHeader(value = "X-User-Id", required = false) String adminId,
-            @RequestHeader(value = "X-User-Role", required = false) String role) {
+            @RequestBody Review updatedReview,
+            @RequestHeader(value = "X-User-Id", required = false) String userId) {
 
-        if (!"ADMIN".equals(role)) {
-            return ResponseEntity.status(403).body(Map.of("error", "Only admins can approve reviews"));
-        }
-
-        return reviewService.approveReview(id, adminId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    /**
-     * Reject a review (Admin only)
-     */
-    @PutMapping("/{id}/reject")
-    public ResponseEntity<?> rejectReview(
-            @PathVariable String id,
-            @RequestBody Map<String, String> body,
-            @RequestHeader(value = "X-User-Role", required = false) String role) {
-
-        if (!"ADMIN".equals(role)) {
-            return ResponseEntity.status(403).body(Map.of("error", "Only admins can reject reviews"));
-        }
-
-        String reason = body.get("reason");
-        return reviewService.rejectReview(id, reason)
-                .map(ResponseEntity::ok)
+        return reviewService.getReview(id)
+                .map(existingReview -> {
+                    // Check if user owns this review or is admin
+                    if (!existingReview.getUserId().equals(userId)) {
+                        return ResponseEntity.status(403).body(Map.of("error", "You can only update your own reviews"));
+                    }
+                    return reviewService.updateReview(id, updatedReview)
+                            .map(ResponseEntity::ok)
+                            .orElse(ResponseEntity.notFound().build());
+                })
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -156,17 +173,27 @@ public class ReviewController {
     }
 
     /**
-     * Get pending reviews (Admin only)
+     * User reply to hotel response
      */
-    @GetMapping("/admin/pending")
-    public ResponseEntity<?> getPendingReviews(
-            @RequestHeader(value = "X-User-Role", required = false) String role) {
+    @PostMapping("/{id}/user-reply")
+    public ResponseEntity<?> userReplyToHotel(
+            @PathVariable String id,
+            @RequestBody Map<String, String> body,
+            @RequestHeader(value = "X-User-Id", required = false) String userId) {
 
-        if (!"ADMIN".equals(role)) {
-            return ResponseEntity.status(403).body(Map.of("error", "Only admins can view pending reviews"));
-        }
-
-        return ResponseEntity.ok(reviewService.getPendingReviews());
+        return reviewService.getReview(id)
+                .map(review -> {
+                    // Check if user owns this review
+                    if (!review.getUserId().equals(userId)) {
+                        return ResponseEntity.status(403)
+                                .body(Map.of("error", "You can only reply to your own review"));
+                    }
+                    String userReply = body.get("userReply");
+                    return reviewService.addUserReply(id, userReply)
+                            .map(ResponseEntity::ok)
+                            .orElse(ResponseEntity.notFound().build());
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 
     /**

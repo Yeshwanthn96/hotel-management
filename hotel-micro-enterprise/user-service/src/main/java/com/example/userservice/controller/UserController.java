@@ -240,4 +240,19 @@ public class UserController {
                     .body(Map.of("error", e.getMessage()));
         }
     }
+
+    /**
+     * Get all user IDs - Internal service use (no auth required for
+     * service-to-service calls)
+     */
+    @GetMapping("/internal/user-ids")
+    public ResponseEntity<?> getAllUserIds() {
+        try {
+            java.util.List<String> userIds = authService.getAllUserIds();
+            return ResponseEntity.ok(Map.of("userIds", userIds));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
 }

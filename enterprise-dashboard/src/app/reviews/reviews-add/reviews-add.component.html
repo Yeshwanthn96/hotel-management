@@ -1,35 +1,174 @@
 <div class="container">
   <div class="card">
-    <h2 class="card-title">Add Review</h2>
-    <form>
-      <div class="form-group">
-        <label for="reviewHotel">Hotel *</label>
-        <select id="reviewHotel" [(ngModel)]="review.hotelId" name="hotelId" required>
-          <option value="">Select hotel</option>
-          <option *ngFor="let hotel of hotels" [value]="hotel.id">{{hotel.name}}</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="reviewTitle">Review Title *</label>
-        <input type="text" id="reviewTitle" [(ngModel)]="review.title" name="title" placeholder="Summarize your experience" required>
-      </div>
-      <div class="form-group">
-        <label for="reviewRating">Rating *</label>
-        <div style="display: flex; gap: 10px; align-items: center;">
-          <label *ngFor="let r of [1,2,3,4,5]" style="margin: 0; cursor: pointer;">
-            <input type="radio" [(ngModel)]="review.rating" [value]="r" name="rating" style="margin-right: 5px;">
-            {{r}} ⭐
-          </label>
+    <!-- Already Reviewed Notice -->
+    <div *ngIf="alreadyReviewed" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 30px; border-radius: 12px; margin-bottom: 25px; text-align: center;">
+      <div style="font-size: 48px; margin-bottom: 15px;">✅</div>
+      <h2 style="margin: 0 0 10px 0; font-size: 28px;">Review Already Submitted!</h2>
+      <p style="margin: 0 0 20px 0; font-size: 16px; opacity: 0.95;">
+        You have already written a review for <strong>{{ selectedHotelName }}</strong>
+      </p>
+      <p style="margin: 0 0 20px 0; font-size: 14px; opacity: 0.9;">
+        You can only submit one review per hotel. View or edit your existing review below.
+      </p>
+      <button 
+        class="btn btn-primary" 
+        style="background: white; color: #f5576c; font-weight: bold; padding: 12px 30px; border: none;"
+        [routerLink]="['/my-reviews']">
+        📝 View My Reviews
+      </button>
+    </div>
+
+    <h2 *ngIf="!alreadyReviewed" class="card-title">{{ isEditMode ? '✏️ Edit Your Review' : '⭐ Write a Review' }}</h2>
+    
+    <!-- Hotel Selection or Display -->
+    <div *ngIf="!alreadyReviewed && selectedHotelName && fromQueryParam" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; margin-bottom: 25px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 32px;">🏨</span>
+        <div>
+          <h3 style="margin: 0; font-size: 24px;">{{ selectedHotelName }}</h3>
+          <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.9;">Share your experience with other travelers</p>
         </div>
       </div>
-      <div class="form-group">
-        <label for="comment">Review Comment *</label>
-        <textarea id="comment" [(ngModel)]="review.comment" name="comment" rows="4" placeholder="Share your experience..." required></textarea>
+    </div>
+    
+    <form *ngIf="!alreadyReviewed">
+      <!-- Hotel Dropdown (only if not pre-selected) -->
+      <div *ngIf="!fromQueryParam" class="form-group">
+        <label for="reviewHotel">Select Hotel *</label>
+        <select id="reviewHotel" [(ngModel)]="review.hotelId" (ngModelChange)="onHotelChange()" name="hotelId" required>
+          <option value="">Choose a hotel where you stayed</option>
+          <option *ngFor="let hotel of hotels" [value]="hotel.id">
+            {{hotel.name}}
+          </option>
+        </select>
+        <small style="color: #666; display: block; margin-top: 5px;">
+          ℹ️ Only hotels where you have completed stays are shown
+        </small>
       </div>
-      <div class="flex">
-        <button type="button" (click)="save()" class="btn btn-primary">Submit Review</button>
-        <button type="button" routerLink="/reviews" class="btn btn-secondary">Cancel</button>
+
+      <!-- Existing Review Alert -->
+      <div *ngIf="existingUserReview && !isEditMode" style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+          <span style="font-size: 20px;">⚠️</span>
+          <strong style="color: #856404;">You already reviewed this hotel</strong>
+        </div>
+        <p style="margin: 0 0 12px 0; color: #856404;">You can edit or delete your existing review below.</p>
+        <div style="display: flex; gap: 10px;">
+          <button type="button" (click)="editExistingReview()" class="btn btn-secondary" style="padding: 8px 16px; font-size: 13px;">
+            ✏️ Edit Existing Review
+          </button>
+          <button type="button" (click)="deleteExistingReview()" class="btn btn-danger" style="padding: 8px 16px; font-size: 13px;">
+            🗑 Delete Review
+          </button>
+        </div>
+      </div>
+
+      <!-- Review Form (show only if no existing review or in edit mode) -->
+      <div *ngIf="!existingUserReview || isEditMode">
+        <div class="form-group">
+          <label for="reviewTitle">Review Title *</label>
+          <input type="text" id="reviewTitle" [(ngModel)]="review.title" name="title" placeholder="Summarize your experience in a few words" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="reviewRating">Rating *</label>
+          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <label *ngFor="let r of [1,2,3,4,5]" style="margin: 0; cursor: pointer; padding: 8px 16px; background: #f0f0f0; border-radius: 8px; display: flex; align-items: center; gap: 6px; transition: all 0.2s;" [style.background]="review.rating === r ? '#ffa500' : '#f0f0f0'" [style.color]="review.rating === r ? 'white' : '#333'">
+              <input type="radio" [(ngModel)]="review.rating" [value]="r" name="rating" style="display: none;">
+              <span style="font-size: 20px;">⭐</span>
+              <span style="font-weight: 600;">{{ r }}</span>
+            </label>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="comment">Your Review *</label>
+          <textarea id="comment" [(ngModel)]="review.comment" name="comment" rows="5" placeholder="Share details about your stay, service, amenities, location, etc." required style="font-size: 14px;"></textarea>
+          <small style="color: #666; display: block; margin-top: 5px;">
+            💡 Tip: Be specific and helpful to other travelers
+          </small>
+        </div>
+        
+        <div class="flex" style="gap: 10px;">
+          <button type="button" (click)="save()" class="btn btn-primary" style="padding: 12px 24px;">
+            {{ isEditMode ? '💾 Update Review' : '📤 Submit Review' }}
+          </button>
+          <button type="button" routerLink="/reviews" class="btn btn-secondary" style="padding: 12px 24px;">Cancel</button>
+        </div>
       </div>
     </form>
+  </div>
+
+  <!-- Existing Reviews/Conversations Section -->
+  <div *ngIf="selectedHotelName && hotelReviews.length > 0" class="card" style="margin-top: 30px;">
+    <h3 style="margin: 0 0 20px 0; padding-bottom: 15px; border-bottom: 2px solid #667eea; color: #333;">
+      💬 Guest Conversations ({{ hotelReviews.length }})
+    </h3>
+    
+    <div *ngFor="let review of hotelReviews" style="margin-bottom: 24px;">
+      <!-- Chat Container -->
+      <div style="background: white; border: 1px solid #e0e0e0; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden;">
+        
+        <!-- Guest Review (Left-aligned) -->
+        <div style="padding: 20px; background: #f5f7fa;">
+          <div style="display: flex; align-items: flex-start; gap: 12px;">
+            <div [style.background]="review.userId === userId ? '#667eea' : '#999'" style="color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;">
+              {{ review.userId === userId ? '👤' : '👥' }}
+            </div>
+            <div style="flex: 1;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px; flex-wrap: wrap;">
+                <strong style="color: #333; font-size: 15px;">
+                  {{ review.userId === userId ? 'You' : (review.userName || 'Guest') }}
+                </strong>
+                <span *ngIf="review.verified" style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;">✓ Verified</span>
+                <span style="font-size: 12px; color: #999; margin-left: auto;">{{ review.createdAt | date:'short' }}</span>
+              </div>
+              <div [style.background]="review.userId === userId ? 'white' : '#fff'" [style.border]="review.userId === userId ? '2px solid #667eea' : '1px solid #e0e0e0'" style="padding: 16px; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.1);">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                  <div style="font-size: 16px;">{{ getStars(review.rating) }}</div>
+                  <h4 *ngIf="review.title" style="margin: 0; color: #333; font-size: 15px; font-weight: 600;">{{ review.title }}</h4>
+                </div>
+                <p style="margin: 0; color: #444; line-height: 1.6; font-size: 14px;">{{ review.comment }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hotel Reply (Right-aligned) -->
+        <div *ngIf="review.adminReply" style="padding: 20px; background: #fff;">
+          <div style="display: flex; align-items: flex-start; gap: 12px; flex-direction: row-reverse;">
+            <div style="background: #4caf50; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;">
+              🏨
+            </div>
+            <div style="flex: 1; text-align: right;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px; justify-content: flex-end;">
+                <span style="font-size: 12px; color: #999;">Hotel Response</span>
+              </div>
+              <div style="background: #e8f5e9; padding: 16px; border-radius: 12px; box-shadow: 0 1px 4px rgba(76,175,80,0.2); text-align: left;">
+                <p style="margin: 0; color: #333; line-height: 1.6; font-size: 14px;">{{ review.adminReply }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- User's Reply to Hotel (Left-aligned) -->
+        <div *ngIf="review.userReply" style="padding: 20px; background: #f5f7fa;">
+          <div style="display: flex; align-items: flex-start; gap: 12px;">
+            <div style="background: #2196f3; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;">
+              👤
+            </div>
+            <div style="flex: 1;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                <strong style="color: #333; font-size: 15px;">Follow-up</strong>
+              </div>
+              <div style="background: #e3f2fd; padding: 16px; border-radius: 12px; box-shadow: 0 1px 4px rgba(33,150,243,0.2);">
+                <p style="margin: 0; color: #333; line-height: 1.6; font-size: 14px;">{{ review.userReply }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
   </div>
 </div>

@@ -37,9 +37,7 @@ import { AppComponent } from './app.component';
       },
       { 
         path: 'reviews', 
-        loadChildren: () => import('./reviews/reviews.module').then(m => m.ReviewsModule),
-        canActivate: [RoleGuard],
-        data: { roles: ['ADMIN'] }
+        loadChildren: () => import('./reviews/reviews.module').then(m => m.ReviewsModule)
       },
       { 
         path: 'notifications', 

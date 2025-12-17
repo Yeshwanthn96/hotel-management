@@ -311,3 +311,127 @@
   color: #c62828;
   border: 1px solid #ef5350;
 }
+
+/* Reviews Section */
+.reviews-section {
+  margin-top: 50px;
+  padding-top: 30px;
+  border-top: 2px solid #e0e0e0;
+}
+
+.reviews-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.reviews-header h2 {
+  margin: 0;
+  color: #2c3e50;
+}
+
+.rating-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avg-rating {
+  font-size: 32px;
+  font-weight: 700;
+  color: #ffa500;
+}
+
+.rating-summary .stars {
+  font-size: 20px;
+  color: #ffa500;
+}
+
+.review-count {
+  color: #666;
+  font-size: 14px;
+}
+
+.no-reviews {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+}
+
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.review-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.reviewer-info strong {
+  display: block;
+  color: #2c3e50;
+  margin-bottom: 4px;
+}
+
+.review-date {
+  font-size: 13px;
+  color: #999;
+}
+
+.review-rating {
+  font-size: 18px;
+  color: #ffa500;
+}
+
+.review-card h4 {
+  margin: 10px 0;
+  color: #34495e;
+}
+
+.review-comment {
+  color: #555;
+  line-height: 1.6;
+  margin: 10px 0;
+}
+
+.verified-badge {
+  display: inline-block;
+  background: #28a745;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  margin-top: 10px;
+}
+
+.admin-reply {
+  background: #e8f5e9;
+  border-left: 4px solid #4caf50;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 15px;
+}
+
+.admin-reply strong {
+  color: #2e7d32;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.admin-reply p {
+  margin: 0;
+  color: #333;
+  line-height: 1.5;
+}

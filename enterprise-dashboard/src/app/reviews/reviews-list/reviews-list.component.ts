@@ -9,14 +9,20 @@ import { HttpClient } from '@angular/common/http';
 })
 export class ReviewsListComponent implements OnInit {
   reviews: Review[] = [];
+  groupedReviews: Map<string, Review[]> = new Map();
   userId: string | null = null;
   hotels: Map<string, any> = new Map();
   users: Map<string, any> = new Map();
   showReplyModal = false;
   showAdminReplyModal = false;
+  showEditModal = false;
+  showEditUserReplyModal = false;
   selectedReview: Review | null = null;
   userReply = '';
   adminReply = '';
+  editComment = '';
+  editRating = 5;
+  editUserReply = '';
   
   constructor(
     private reviewService: ReviewsService,
@@ -61,7 +67,7 @@ export class ReviewsListComponent implements OnInit {
   }
   
   loadReviews() {
-    // Admin sees all reviews with moderation options, users see their own
+    // Admin sees all reviews, users see their own
     if (this.authService.isAdmin()) {
       this.reviewService.getAllReviews().subscribe({
         next: (data) => {
@@ -70,15 +76,34 @@ export class ReviewsListComponent implements OnInit {
             ...review,
             userName: this.getUserName(review.userId)
           }));
+          this.groupReviewsByHotel();
         },
         error: (err) => console.error('Failed to load all reviews:', err)
       });
     } else if (this.userId) {
       this.reviewService.getUserReviews(this.userId).subscribe({
-        next: (data) => this.reviews = data,
+        next: (data) => {
+          this.reviews = data;
+          this.groupReviewsByHotel();
+        },
         error: (err) => console.error('Failed to load user reviews:', err)
       });
     }
+  }
+
+  groupReviewsByHotel() {
+    this.groupedReviews.clear();
+    this.reviews.forEach(review => {
+      const hotelId = review.hotelId;
+      if (!this.groupedReviews.has(hotelId)) {
+        this.groupedReviews.set(hotelId, []);
+      }
+      this.groupedReviews.get(hotelId)!.push(review);
+    });
+  }
+
+  getHotelIds(): string[] {
+    return Array.from(this.groupedReviews.keys());
   }
 
   openReplyModal(review: Review) {
@@ -97,7 +122,7 @@ export class ReviewsListComponent implements OnInit {
     if (!this.selectedReview || !this.userReply.trim()) return;
     
     // User can reply back to admin's reply
-    this.http.post(`/api/reviews/${this.selectedReview.id}/user-reply`, { reply: this.userReply }).subscribe({
+    this.reviewService.addUserReply(this.selectedReview.id!, this.userReply).subscribe({
       next: () => {
         alert('Reply submitted successfully!');
         this.closeReplyModal();
@@ -109,38 +134,18 @@ export class ReviewsListComponent implements OnInit {
   
   deleteReview(review: Review) {
     if (!review.id) return;
-    if (!confirm(`Delete review for ${review.title}?`)) return;
+    const confirmMsg = this.authService.isAdmin() 
+      ? `Delete this review by ${review.userName || 'user'}?`
+      : `Delete your review for ${this.getHotelName(review.hotelId)}?`;
+    
+    if (!confirm(confirmMsg)) return;
     
     this.reviewService.deleteReview(review.id).subscribe({
       next: () => {
-        alert('Review deleted');
+        alert('Review deleted successfully');
         this.loadReviews();
       },
       error: (err) => alert(`Delete failed: ${err.message}`)
-    });
-  }
-  
-  approveReview(review: Review) {
-    if (!review.id) return;
-    
-    this.reviewService.approveReview(review.id).subscribe({
-      next: () => {
-        alert('Review approved');
-        this.loadReviews();
-      },
-      error: (err) => alert(`Approve failed: ${err.message}`)
-    });
-  }
-  
-  rejectReview(review: Review) {
-    if (!review.id) return;
-    
-    this.reviewService.rejectReview(review.id).subscribe({
-      next: () => {
-        alert('Review rejected');
-        this.loadReviews();
-      },
-      error: (err) => alert(`Reject failed: ${err.message}`)
     });
   }
   
@@ -164,13 +169,76 @@ export class ReviewsListComponent implements OnInit {
   submitAdminReply() {
     if (!this.selectedReview || !this.adminReply.trim()) return;
     
-    this.http.post(`/api/reviews/${this.selectedReview.id}/reply`, { reply: this.adminReply }).subscribe({
+    this.reviewService.addAdminReply(this.selectedReview.id!, this.adminReply).subscribe({
       next: () => {
         alert('Response posted successfully!');
         this.closeAdminReplyModal();
         this.loadReviews();
       },
       error: (err: any) => alert('Failed to post response: ' + (err.error?.message || err.message))
+    });
+  }
+
+  // User edit review methods
+  openEditModal(review: Review) {
+    this.selectedReview = review;
+    this.editComment = review.comment;
+    this.editRating = review.rating;
+    this.showEditModal = true;
+  }
+
+  closeEditModal() {
+    this.showEditModal = false;
+    this.selectedReview = null;
+    this.editComment = '';
+    this.editRating = 5;
+  }
+
+  submitEditReview() {
+    if (!this.selectedReview || !this.editComment.trim()) return;
+    
+    const updateData = {
+      comment: this.editComment,
+      rating: this.editRating
+    };
+    
+    this.reviewService.updateReview(this.selectedReview.id!, updateData).subscribe({
+      next: () => {
+        alert('Review updated successfully!');
+        this.closeEditModal();
+        this.loadReviews();
+      },
+      error: (err: any) => alert('Failed to update review: ' + (err.error?.message || err.message))
+    });
+  }
+
+  canEditReview(review: Review): boolean {
+    return !this.authService.isAdmin() && review.userId === this.userId;
+  }
+
+  // User edit their own reply to hotel
+  openEditUserReplyModal(review: Review) {
+    this.selectedReview = review;
+    this.editUserReply = review.userReply || '';
+    this.showEditUserReplyModal = true;
+  }
+
+  closeEditUserReplyModal() {
+    this.showEditUserReplyModal = false;
+    this.selectedReview = null;
+    this.editUserReply = '';
+  }
+
+  submitEditUserReply() {
+    if (!this.selectedReview || !this.editUserReply.trim()) return;
+    
+    this.reviewService.addUserReply(this.selectedReview.id!, this.editUserReply).subscribe({
+      next: () => {
+        alert('Reply updated successfully!');
+        this.closeEditUserReplyModal();
+        this.loadReviews();
+      },
+      error: (err: any) => alert('Failed to update reply: ' + (err.error?.message || err.message))
     });
   }
 }

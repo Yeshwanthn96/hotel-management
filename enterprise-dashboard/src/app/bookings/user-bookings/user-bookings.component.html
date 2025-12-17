@@ -63,11 +63,19 @@
           Cancel Booking
         </button>
         <button 
-          *ngIf="booking.status === 'COMPLETED'" 
+          *ngIf="(booking.status === 'STAY_COMPLETED' || booking.status === 'COMPLETED') && !hasReviewedHotel(booking.hotelId)" 
           class="btn btn-primary" 
-          [routerLink]="['/bookings/review', booking.id]">
+          [routerLink]="['/reviews/add']"
+          [queryParams]="{hotelId: booking.hotelId, bookingId: booking.id}">
           ⭐ Write Review
         </button>
+        <span 
+          *ngIf="(booking.status === 'STAY_COMPLETED' || booking.status === 'COMPLETED') && hasReviewedHotel(booking.hotelId)"
+          class="badge badge-reviewed"
+          style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 10px 20px; border-radius: 20px; font-size: 14px; font-weight: 600; display: inline-block; cursor: pointer;"
+          [routerLink]="['/my-reviews']">
+          ✅ Already Reviewed
+        </span>
       </div>
     </div>
   </div>

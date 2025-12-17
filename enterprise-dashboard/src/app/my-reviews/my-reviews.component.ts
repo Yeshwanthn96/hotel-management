@@ -90,9 +90,7 @@ interface Hotel {
                 <h4>{{getHotelName(review.hotelId)}}</h4>
                 <span class="review-date">{{review.createdAt | date:'mediumDate'}}</span>
               </div>
-              <div class="review-status" [class]="'status-' + review.status?.toLowerCase()">
-                {{review.status || 'PENDING'}}
-              </div>
+              <span *ngIf="review.verified" class="verified-badge">✓ Verified Stay</span>
             </div>
             
             <div class="review-rating">
@@ -105,15 +103,20 @@ interface Hotel {
             <div *ngIf="review.adminReply" class="admin-reply">
               <strong>🏨 Hotel Response:</strong>
               <p>{{review.adminReply}}</p>
+              <div *ngIf="review.userReply" class="user-reply">
+                <strong>Your Reply:</strong>
+                <p>{{review.userReply}}</p>
+              </div>
             </div>
             
             <div class="review-actions">
-              <button *ngIf="review.status === 'PENDING'" 
-                      class="btn btn-secondary" style="padding: 4px 10px;"
-                      (click)="editReview(review)">Edit</button>
-              <button *ngIf="review.status === 'PENDING'" 
-                      class="btn btn-danger" style="padding: 4px 10px;"
-                      (click)="deleteReview(review)">Delete</button>
+              <button class="btn btn-secondary" style="padding: 4px 10px;"
+                      (click)="editReview(review)">✏️ Edit</button>
+              <button class="btn btn-danger" style="padding: 4px 10px;"
+                      (click)="deleteReview(review)">🗑 Delete</button>
+              <button *ngIf="review.adminReply && !review.userReply" 
+                      class="btn btn-primary" style="padding: 4px 10px;"
+                      (click)="replyToHotel(review)">💬 Reply to Hotel</button>
             </div>
           </div>
         </div>
@@ -232,27 +235,13 @@ interface Hotel {
       color: #7f8c8d;
     }
     
-    .review-status {
+    .verified-badge {
+      background: #28a745;
+      color: white;
       padding: 4px 10px;
       border-radius: 15px;
       font-size: 11px;
       font-weight: bold;
-      text-transform: uppercase;
-    }
-    
-    .status-pending {
-      background: #fff3cd;
-      color: #856404;
-    }
-    
-    .status-approved {
-      background: #d4edda;
-      color: #155724;
-    }
-    
-    .status-rejected {
-      background: #f8d7da;
-      color: #721c24;
     }
     
     .review-rating {
@@ -283,6 +272,23 @@ interface Hotel {
     
     .admin-reply p {
       margin: 10px 0 0 0;
+      color: #555;
+    }
+    
+    .user-reply {
+      background: #f0f8ff;
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 10px;
+      border-left: 3px solid #2196f3;
+    }
+    
+    .user-reply strong {
+      color: #1565c0;
+    }
+    
+    .user-reply p {
+      margin: 5px 0 0 0;
       color: #555;
     }
     
@@ -456,6 +462,19 @@ export class MyReviewsComponent implements OnInit {
         this.loadEligibleHotels();
       },
       error: (err) => alert('Failed to delete review: ' + err.message)
+    });
+  }
+  
+  replyToHotel(review: Review) {
+    const userReply = prompt('Reply to hotel\'s response:', '');
+    if (!userReply || !userReply.trim()) return;
+    
+    this.reviewService.addUserReply(review.id!, userReply).subscribe({
+      next: () => {
+        alert('Reply posted successfully!');
+        this.loadMyReviews();
+      },
+      error: (err) => alert('Failed to post reply: ' + (err.error?.message || err.message))
     });
   }
 }

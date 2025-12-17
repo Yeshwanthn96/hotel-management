@@ -26,6 +26,7 @@ public class SecurityConfig {
                 .cors().and()
                 .authorizeRequests()
                 .antMatchers("/api/auth/login", "/api/auth/register", "/api/auth/health").permitAll()
+                .antMatchers("/api/users/internal/**").permitAll() // Allow internal service calls
                 .antMatchers("/api/users/**").authenticated()
                 .anyRequest().authenticated()
                 .and()

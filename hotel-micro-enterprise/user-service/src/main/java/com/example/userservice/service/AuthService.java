@@ -365,4 +365,13 @@ public class AuthService {
 
         return stats;
     }
+
+    /**
+     * Get all user IDs - Internal service use
+     */
+    public java.util.List<String> getAllUserIds() {
+        return userRepository.findAll().stream()
+                .map(User::getId)
+                .collect(java.util.stream.Collectors.toList());
+    }
 }

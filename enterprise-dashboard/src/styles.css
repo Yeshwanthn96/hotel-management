@@ -33,20 +33,22 @@ body {
 
 nav {
   display: flex;
-  gap: 30px;
+  gap: 25px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 nav a {
   color: #ffffff;
   text-decoration: none;
   font-weight: 400;
-  font-size: 14px;
-  letter-spacing: 1px;
+  font-size: 13px;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
   padding: 8px 0;
   border-bottom: 2px solid transparent;
   transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
 nav a:hover {
@@ -61,18 +63,33 @@ nav a.active {
 }
 
 /* Notification Badge */
+.notification-link {
+  position: relative;
+  font-size: 16px;
+  padding: 0 !important;
+  min-width: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .notification-badge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
   background: #e74c3c;
   color: white;
-  font-size: 10px;
+  font-size: 8px;
   font-weight: bold;
-  padding: 2px 6px;
-  border-radius: 10px;
-  margin-left: 5px;
-  min-width: 18px;
+  padding: 1px 4px;
+  border-radius: 8px;
+  min-width: 14px;
+  height: 14px;
+  line-height: 12px;
   text-align: center;
-  display: inline-block;
-  vertical-align: middle;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   animation: pulse 2s infinite;
 }
 
