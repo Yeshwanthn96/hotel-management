@@ -10,6 +10,9 @@
     <version>1.0.0</version>
     <packaging>pom</packaging>
 
+    <!-- =========================
+         MODULES
+    ========================== -->
     <modules>
         <module>service-registry</module>
         <module>api-gateway</module>
@@ -23,14 +26,27 @@
         <module>analytics-service</module>
     </modules>
 
+    <!-- =========================
+         PROPERTIES
+    ========================== -->
     <properties>
+        <!-- JAVA -->
         <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+
+        <!-- SPRING -->
         <spring.boot.version>2.7.12</spring.boot.version>
         <spring.cloud.version>2021.0.6</spring.cloud.version>
     </properties>
 
+    <!-- =========================
+         DEPENDENCY MANAGEMENT
+    ========================== -->
     <dependencyManagement>
         <dependencies>
+
+            <!-- Spring Boot BOM -->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
@@ -39,6 +55,7 @@
                 <scope>import</scope>
             </dependency>
 
+            <!-- Spring Cloud BOM -->
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
@@ -46,16 +63,34 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
         </dependencies>
     </dependencyManagement>
 
+    <!-- =========================
+         BUILD CONFIG
+    ========================== -->
     <build>
         <pluginManagement>
             <plugins>
+
+                <!-- Spring Boot Plugin -->
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
                 </plugin>
+
+                <!-- Maven Compiler Plugin (FIXES JAVA 5 ERROR) -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.11.0</version>
+                    <configuration>
+                        <source>${maven.compiler.source}</source>
+                        <target>${maven.compiler.target}</target>
+                    </configuration>
+                </plugin>
+
             </plugins>
         </pluginManagement>
     </build>
