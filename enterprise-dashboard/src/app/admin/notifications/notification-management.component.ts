@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-notification-management',
@@ -13,10 +14,13 @@ export class NotificationManagementComponent implements OnInit {
   error = '';
   successMessage = '';
 
+  users: any[] = [];
+  selectedUserIds: string[] = [];
+
   recipientTypes = [
     { value: 'ALL', label: 'All Users' },
-    { value: 'UPCOMING_BOOKINGS', label: 'Users with Upcoming Bookings' },
-    { value: 'CUSTOM', label: 'Custom User List' }
+    { value: 'SPECIFIC', label: 'Specific Users' },
+    { value: 'UPCOMING_BOOKINGS', label: 'Users with Upcoming Bookings' }
   ];
 
   notificationTypes = [
@@ -24,13 +28,22 @@ export class NotificationManagementComponent implements OnInit {
     'ANNOUNCEMENT',
     'SYSTEM_UPDATE',
     'REMINDER',
-    'SPECIAL_OFFER'
+    'SPECIAL_OFFER',
+    'BOOKING_UPDATE'
   ];
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder, private http: HttpClient) {}
 
   ngOnInit(): void {
     this.initForm();
+    this.loadUsers();
+  }
+
+  loadUsers(): void {
+    this.http.get<any>('/api/users/all').subscribe({
+      next: (response) => this.users = response.users || response || [],
+      error: (err) => console.error('Failed to load users:', err)
+    });
   }
 
   initForm(): void {
@@ -50,8 +63,30 @@ export class NotificationManagementComponent implements OnInit {
     });
   }
 
+  toggleUserSelection(userId: string): void {
+    const index = this.selectedUserIds.indexOf(userId);
+    if (index > -1) {
+      this.selectedUserIds.splice(index, 1);
+    } else {
+      this.selectedUserIds.push(userId);
+    }
+  }
+
+  isUserSelected(userId: string): boolean {
+    return this.selectedUserIds.includes(userId);
+  }
+
+  selectAllUsers(): void {
+    this.selectedUserIds = this.users.map(u => u.id);
+  }
+
+  clearUserSelection(): void {
+    this.selectedUserIds = [];
+  }
+
   openSendModal(): void {
     this.showSendModal = true;
+    this.selectedUserIds = [];
     this.sendForm.reset({
       recipientType: 'ALL',
       notificationType: 'PROMOTIONAL',
@@ -68,6 +103,7 @@ export class NotificationManagementComponent implements OnInit {
   closeSendModal(): void {
     this.showSendModal = false;
     this.sendForm.reset();
+    this.selectedUserIds = [];
     this.error = '';
   }
 
@@ -78,6 +114,12 @@ export class NotificationManagementComponent implements OnInit {
     }
 
     const formValue = this.sendForm.value;
+
+    // Validate specific user selection
+    if (formValue.recipientType === 'SPECIFIC' && this.selectedUserIds.length === 0) {
+      this.error = 'Please select at least one user';
+      return;
+    }
     
     // Validate scheduling
     if (!formValue.scheduleNow && (!formValue.scheduleDate || !formValue.scheduleTime)) {
@@ -88,11 +130,9 @@ export class NotificationManagementComponent implements OnInit {
     this.loading = true;
     this.error = '';
 
-    const token = localStorage.getItem('token');
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-
     const notificationData = {
       recipientType: formValue.recipientType,
+      userIds: formValue.recipientType === 'SPECIFIC' ? this.selectedUserIds : [],
       type: formValue.notificationType,
       subject: formValue.subject,
       message: formValue.message,
@@ -103,35 +143,20 @@ export class NotificationManagementComponent implements OnInit {
         : null
     };
 
-    // Note: This endpoint needs to be implemented in notification-service
-    fetch('/api/notifications/admin/send-bulk', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'X-User-Id': user.id || '',
-        'X-User-Role': user.role || ''
-      },
-      body: JSON.stringify(notificationData)
-    })
-      .then(res => {
-        if (!res.ok) {
-          throw new Error('Failed to send notification');
-        }
-        return res.json();
-      })
-      .then(data => {
+    this.http.post('/api/notifications/admin/send-bulk', notificationData).subscribe({
+      next: (data) => {
         this.loading = false;
         this.successMessage = formValue.scheduleNow 
-          ? 'Notification sent successfully!'
+          ? `Notification sent to ${formValue.recipientType === 'SPECIFIC' ? this.selectedUserIds.length + ' users' : 'all users'}!`
           : 'Notification scheduled successfully!';
-        setTimeout(() => this.successMessage = '', 3000);
+        setTimeout(() => this.successMessage = '', 5000);
         this.closeSendModal();
-      })
-      .catch(err => {
+      },
+      error: (err) => {
         this.loading = false;
-        this.error = err.message || 'Failed to send notification. This feature requires backend implementation.';
-      });
+        this.error = err.error?.message || 'Failed to send notification. Backend implementation may be required.';
+      }
+    });
   }
 
   getChannelsSelected(): number {

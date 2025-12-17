@@ -89,11 +89,13 @@ export class AuthService {
   }
 
   isAdmin(): boolean {
-    return this.hasRole(['ADMIN', 'admin']);
+    // Must be authenticated AND have admin role
+    return this.isAuthenticated() && this.hasRole(['ADMIN', 'admin']);
   }
 
   isUser(): boolean {
-    return this.hasRole(['USER', 'user']);
+    // Must be authenticated AND have user role
+    return this.isAuthenticated() && this.hasRole(['USER', 'user']);
   }
 
   private loadUserFromStorage(): void {

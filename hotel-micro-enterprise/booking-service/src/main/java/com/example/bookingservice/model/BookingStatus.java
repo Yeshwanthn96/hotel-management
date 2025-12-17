@@ -6,6 +6,8 @@ public enum BookingStatus {
     PAYMENT_PENDING, // Waiting for payment
     PAYMENT_COMPLETED, // Payment successful
     CONFIRMED, // Booking confirmed
+    ON_HOLD, // Admin put booking on hold
+    REJECTED, // Admin rejected booking
     COMPLETED, // Booking completed (checked out)
     CANCELLED, // Booking cancelled by user
     FAILED, // Booking failed (saga compensation)

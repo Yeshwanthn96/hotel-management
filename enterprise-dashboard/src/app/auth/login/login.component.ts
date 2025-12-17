@@ -14,7 +14,10 @@ export class LoginComponent {
   errorMessage = '';
   showPassword = false;
   
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private authService: AuthService, private router: Router) {
+    // Automatically logout any existing session when accessing login page
+    this.authService.logout();
+  }
   
   login() {
     this.errorMessage = '';
@@ -33,10 +36,13 @@ export class LoginComponent {
 
     this.authService.login({ username: this.username, password: this.password })
       .subscribe({
-        next: () => {
+        next: (response) => {
           this.isLoading = false;
-          // Redirect to hotels page after login
-          this.router.navigate(['/hotels']);
+          // Navigate based on role (case-insensitive) and force reload to update UI
+          const targetUrl = (response.role && response.role.toUpperCase() === 'ADMIN') ? '/admin/dashboard' : '/hotels';
+          this.router.navigate([targetUrl]).then(() => {
+            window.location.reload(); // Force reload to refresh all components with new user state
+          });
         },
         error: (error) => {
           this.isLoading = false;

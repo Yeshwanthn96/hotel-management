@@ -183,4 +183,26 @@ public class HotelService {
         Hotel updatedHotel = hotelRepository.save(hotel);
         return new HotelResponse(updatedHotel);
     }
+
+    public HotelResponse activateHotel(String id) {
+        Hotel hotel = hotelRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Hotel not found"));
+
+        hotel.setActive(true);
+        hotel.setUpdatedAt(LocalDateTime.now());
+
+        Hotel updatedHotel = hotelRepository.save(hotel);
+        return new HotelResponse(updatedHotel);
+    }
+
+    public HotelResponse deactivateHotel(String id) {
+        Hotel hotel = hotelRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Hotel not found"));
+
+        hotel.setActive(false);
+        hotel.setUpdatedAt(LocalDateTime.now());
+
+        Hotel updatedHotel = hotelRepository.save(hotel);
+        return new HotelResponse(updatedHotel);
+    }
 }

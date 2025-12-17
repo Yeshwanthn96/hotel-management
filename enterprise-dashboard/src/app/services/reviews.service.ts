@@ -10,8 +10,11 @@ export interface Review {
   rating: number;
   title: string;
   comment: string;
+  status?: string;
   createdAt?: string;
   verified?: boolean;
+  adminReply?: string;
+  adminReplyAt?: string;
 }
 
 @Injectable({ providedIn: 'root' })

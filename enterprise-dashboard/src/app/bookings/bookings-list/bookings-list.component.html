@@ -6,56 +6,111 @@
           {{ authService.isAdmin() ? 'All Bookings Management' : 'My Bookings' }}
         </h2>
         <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">
-          {{ authService.isAdmin() ? 'Manage all customer bookings' : 'View and manage your hotel bookings' }}
+          {{ authService.isAdmin() ? 'Manage all customer bookings - Confirm, Hold, or Reject' : 'View and manage your hotel bookings' }}
         </p>
       </div>
-      <button *ngIf="authService.canAdd()" routerLink="/bookings/add" class="btn btn-primary">+ New Booking</button>
-      <span *ngIf="!authService.canAdd()" style="color: #999; font-size: 14px; font-style: italic;">
-        View Only Access
-      </span>
+      <div style="display: flex; gap: 10px;">
+        <select *ngIf="authService.isAdmin()" [(ngModel)]="statusFilter" style="padding: 8px 12px; border-radius: 4px; border: 1px solid #ddd;">
+          <option value="ALL">All Status</option>
+          <option value="PENDING">Pending</option>
+          <option value="CONFIRMED">Confirmed</option>
+          <option value="ON_HOLD">On Hold</option>
+          <option value="CANCELLED">Cancelled</option>
+          <option value="REJECTED">Rejected</option>
+          <option value="COMPLETED">Completed</option>
+        </select>
+        <button *ngIf="!authService.isAdmin()" routerLink="/bookings/add" class="btn btn-primary">+ New Booking</button>
+      </div>
     </div>
     
-    <div *ngIf="bookings && bookings.length > 0; else emptyState">
+    <div *ngIf="filteredBookings && filteredBookings.length > 0; else emptyState">
       <table>
         <thead>
           <tr>
             <th>Booking ID</th>
-            <th *ngIf="authService.isAdmin()">User ID</th>
-            <th>Hotel ID</th>
-            <th>Room ID</th>
+            <th *ngIf="authService.isAdmin()">Customer</th>
+            <th>Hotel</th>
+            <th>Room</th>
             <th>Check-in</th>
             <th>Check-out</th>
             <th>Guests</th>
             <th>Amount</th>
             <th>Status</th>
             <th>Created</th>
-            <th *ngIf="authService.canDelete()">Actions</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let booking of bookings">
-            <td>{{booking.id}}</td>
-            <td *ngIf="authService.isAdmin()"><strong>{{booking.userId}}</strong></td>
-            <td>{{booking.hotelId}}</td>
-            <td>{{booking.roomId}}</td>
-            <td>{{booking.checkInDate | date:'short'}}</td>
-            <td>{{booking.checkOutDate | date:'short'}}</td>
+          <tr *ngFor="let booking of filteredBookings">
+            <td><small>{{booking.id?.substring(0, 8)}}...</small></td>
+            <td *ngIf="authService.isAdmin()">
+              <div>
+                <strong>{{getUserName(booking.userId)}}</strong>
+                <br><small style="color: #666;">{{getUserEmail(booking.userId)}}</small>
+              </div>
+            </td>
+            <td><strong>{{getHotelName(booking.hotelId)}}</strong></td>
+            <td>{{booking.roomId?.substring(0, 8)}}...</td>
+            <td>{{booking.checkInDate | date:'mediumDate'}}</td>
+            <td>{{booking.checkOutDate | date:'mediumDate'}}</td>
             <td>{{booking.numberOfGuests}}</td>
-            <td>₹{{booking.totalAmount}}</td>
+            <td><strong>₹{{booking.totalAmount}}</strong></td>
             <td>
               <span [class]="'badge badge-' + getStatusBadgeClass(booking.status || '')">
                 {{booking.status}}
               </span>
             </td>
             <td>{{booking.createdAt | date:'short'}}</td>
-            <td *ngIf="authService.canDelete()">
+            <td>
+              <!-- Admin Actions -->
+              <div *ngIf="authService.isAdmin()" style="display: flex; gap: 5px; flex-wrap: wrap;">
+                <button 
+                  *ngIf="booking.status === 'PENDING' || booking.status === 'PAYMENT_PENDING'"
+                  (click)="confirmBooking(booking)" 
+                  class="btn btn-success" 
+                  style="padding: 4px 8px; font-size: 11px;">
+                  ✓ Confirm
+                </button>
+                <button 
+                  *ngIf="booking.status === 'PENDING' || booking.status === 'PAYMENT_PENDING'"
+                  (click)="holdBooking(booking)" 
+                  class="btn btn-warning" 
+                  style="padding: 4px 8px; font-size: 11px;">
+                  ⏸ Hold
+                </button>
+                <button 
+                  *ngIf="booking.status === 'ON_HOLD'"
+                  (click)="resumeBooking(booking)" 
+                  class="btn btn-info" 
+                  style="padding: 4px 8px; font-size: 11px;">
+                  ▶ Resume
+                </button>
+                <button 
+                  *ngIf="booking.status === 'PENDING' || booking.status === 'ON_HOLD' || booking.status === 'PAYMENT_PENDING'"
+                  (click)="rejectBooking(booking)" 
+                  class="btn btn-danger" 
+                  style="padding: 4px 8px; font-size: 11px;">
+                  ✗ Reject
+                </button>
+                <button 
+                  *ngIf="booking.status === 'CONFIRMED'"
+                  (click)="cancelBooking(booking)" 
+                  class="btn btn-secondary" 
+                  style="padding: 4px 8px; font-size: 11px;">
+                  Cancel
+                </button>
+              </div>
+              <!-- User Actions -->
               <button 
-                *ngIf="booking.status !== 'CANCELLED' && booking.status !== 'FAILED'"
+                *ngIf="!authService.isAdmin() && booking.status !== 'CANCELLED' && booking.status !== 'REJECTED' && booking.status !== 'COMPLETED'"
                 (click)="cancelBooking(booking)" 
                 class="btn btn-danger" 
                 style="padding: 6px 12px;">
                 Cancel
               </button>
+              <span *ngIf="!authService.isAdmin() && (booking.status === 'CANCELLED' || booking.status === 'REJECTED' || booking.status === 'COMPLETED')" style="color: #999;">
+                -
+              </span>
             </td>
           </tr>
         </tbody>
@@ -64,10 +119,9 @@
     
     <ng-template #emptyState>
       <div class="empty-state">
-        <h3>{{ authService.isAdmin() ? 'No Bookings in System' : 'No Bookings Yet' }}</h3>
-        <p *ngIf="authService.isAdmin()">No customer bookings have been made yet</p>
-        <p *ngIf="!authService.isAdmin() && authService.canAdd()">Ready to book your next stay? Browse our hotels and make a reservation</p>
-        <p *ngIf="!authService.isAdmin() && !authService.canAdd()">You haven't made any bookings yet</p>
+        <h3>{{ authService.isAdmin() ? 'No Bookings Found' : 'No Bookings Yet' }}</h3>
+        <p *ngIf="authService.isAdmin()">No customer bookings match the current filter</p>
+        <p *ngIf="!authService.isAdmin()">Ready to book your next stay? Browse our hotels and make a reservation</p>
       </div>
     </ng-template>
   </div>

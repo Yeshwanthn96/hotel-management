@@ -2,7 +2,7 @@
   <div class="header">
     <h1>Notification Management</h1>
     <button class="btn btn-primary" (click)="openSendModal()">
-      <i class="fas fa-paper-plane"></i> Send Bulk Notification
+      📤 Send Notification
     </button>
   </div>
 
@@ -16,22 +16,21 @@
 
   <!-- Info Card -->
   <div class="info-card">
-    <div class="info-icon">
-      <i class="fas fa-info-circle"></i>
-    </div>
     <div class="info-content">
-      <h3>Send Notifications to Users</h3>
-      <p>Use this panel to send bulk notifications to all users or specific groups. You can schedule notifications for later delivery and choose multiple delivery channels.</p>
-      <p class="note"><strong>Note:</strong> This feature requires backend implementation in the notification-service.</p>
+      <h3>📨 Send Notifications to Users</h3>
+      <p>Use this panel to send notifications to all users, specific users, or groups. You can choose to send immediately or schedule for later.</p>
+      <ul style="margin: 10px 0; padding-left: 20px; color: #666;">
+        <li><strong>All Users:</strong> Send to everyone registered in the system</li>
+        <li><strong>Specific Users:</strong> Select individual users from the list</li>
+        <li><strong>Upcoming Bookings:</strong> Target users with reservations in the next 7 days</li>
+      </ul>
     </div>
   </div>
 
   <!-- Quick Stats -->
   <div class="stats-grid">
     <div class="stat-card">
-      <div class="stat-icon email">
-        <i class="fas fa-envelope"></i>
-      </div>
+      <div class="stat-icon email">📧</div>
       <div class="stat-content">
         <h3>Email Channel</h3>
         <p>Primary notification method</p>
@@ -39,9 +38,7 @@
     </div>
 
     <div class="stat-card">
-      <div class="stat-icon sms">
-        <i class="fas fa-sms"></i>
-      </div>
+      <div class="stat-icon sms">📱</div>
       <div class="stat-content">
         <h3>SMS Channel</h3>
         <p>For urgent notifications</p>
@@ -49,27 +46,33 @@
     </div>
 
     <div class="stat-card">
-      <div class="stat-icon app">
-        <i class="fas fa-bell"></i>
-      </div>
+      <div class="stat-icon app">🔔</div>
       <div class="stat-content">
         <h3>In-App Notifications</h3>
         <p>User dashboard alerts</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon users">👥</div>
+      <div class="stat-content">
+        <h3>{{ users.length }} Users</h3>
+        <p>Total registered users</p>
       </div>
     </div>
   </div>
 
   <!-- Send Modal -->
   <div class="modal-overlay" *ngIf="showSendModal" (click)="closeSendModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-content" (click)="$event.stopPropagation()" style="max-width: 700px;">
       <div class="modal-header">
-        <h2>Send Bulk Notification</h2>
+        <h2>Send Notification</h2>
         <button class="close-btn" (click)="closeSendModal()">&times;</button>
       </div>
 
       <form [formGroup]="sendForm" class="notification-form">
         <div class="form-section">
-          <h3>Recipients</h3>
+          <h3>👥 Recipients</h3>
           
           <div class="form-group">
             <label>Recipient Type *</label>
@@ -78,6 +81,29 @@
                 {{ type.label }}
               </option>
             </select>
+          </div>
+
+          <!-- User Selection for Specific Users -->
+          <div class="form-group" *ngIf="sendForm.get('recipientType')?.value === 'SPECIFIC'">
+            <label>Select Users * ({{ selectedUserIds.length }} selected)</label>
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+              <button type="button" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px;" (click)="selectAllUsers()">Select All</button>
+              <button type="button" class="btn btn-secondary" style="padding: 4px 10px; font-size: 12px;" (click)="clearUserSelection()">Clear</button>
+            </div>
+            <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px; padding: 10px;">
+              <label *ngFor="let user of users" 
+                     style="display: flex; align-items: center; padding: 8px; margin: 2px 0; background: #f9f9f9; border-radius: 4px; cursor: pointer;"
+                     [style.background]="isUserSelected(user.id) ? '#e3f2fd' : '#f9f9f9'">
+                <input type="checkbox" 
+                       [checked]="isUserSelected(user.id)" 
+                       (change)="toggleUserSelection(user.id)"
+                       style="margin-right: 10px;">
+                <div>
+                  <strong>{{ user.firstName }} {{ user.lastName }}</strong>
+                  <br><small style="color: #666;">{{ user.email }}</small>
+                </div>
+              </label>
+            </div>
           </div>
 
           <div class="form-group">
@@ -91,7 +117,7 @@
         </div>
 
         <div class="form-section">
-          <h3>Message Content</h3>
+          <h3>✉️ Message Content</h3>
           
           <div class="form-group">
             <label>Subject *</label>
@@ -105,62 +131,51 @@
         </div>
 
         <div class="form-section">
-          <h3>Delivery Channels</h3>
+          <h3>📡 Delivery Channels</h3>
           
           <div class="channels-group" formGroupName="channels">
             <label class="checkbox-label">
               <input type="checkbox" formControlName="email">
-              <span class="checkbox-custom"></span>
-              <span class="checkbox-text">
-                <i class="fas fa-envelope"></i> Email
-              </span>
+              <span class="checkbox-text">📧 Email</span>
             </label>
 
             <label class="checkbox-label">
               <input type="checkbox" formControlName="sms">
-              <span class="checkbox-custom"></span>
-              <span class="checkbox-text">
-                <i class="fas fa-sms"></i> SMS
-              </span>
+              <span class="checkbox-text">📱 SMS</span>
             </label>
 
             <label class="checkbox-label">
               <input type="checkbox" formControlName="inApp">
-              <span class="checkbox-custom"></span>
-              <span class="checkbox-text">
-                <i class="fas fa-bell"></i> In-App Notification
-              </span>
+              <span class="checkbox-text">🔔 In-App Notification</span>
             </label>
           </div>
 
-          <p class="channel-info" *ngIf="getChannelsSelected() === 0">
+          <p class="channel-info" *ngIf="getChannelsSelected() === 0" style="color: #f44336;">
             ⚠️ Please select at least one delivery channel
           </p>
         </div>
 
         <div class="form-section">
-          <h3>Schedule</h3>
+          <h3>⏰ Schedule</h3>
           
           <div class="schedule-options">
             <label class="radio-label">
               <input type="radio" formControlName="scheduleNow" [value]="true">
-              <span class="radio-custom"></span>
               <span class="radio-text">Send Immediately</span>
             </label>
 
             <label class="radio-label">
               <input type="radio" formControlName="scheduleNow" [value]="false">
-              <span class="radio-custom"></span>
               <span class="radio-text">Schedule for Later</span>
             </label>
           </div>
 
-          <div class="schedule-datetime" *ngIf="!sendForm.get('scheduleNow')?.value">
-            <div class="form-group">
+          <div class="schedule-datetime" *ngIf="!sendForm.get('scheduleNow')?.value" style="display: flex; gap: 15px; margin-top: 15px;">
+            <div class="form-group" style="flex: 1;">
               <label>Date</label>
               <input type="date" formControlName="scheduleDate">
             </div>
-            <div class="form-group">
+            <div class="form-group" style="flex: 1;">
               <label>Time</label>
               <input type="time" formControlName="scheduleTime">
             </div>
@@ -180,8 +195,7 @@
             class="btn btn-primary" 
             (click)="sendNotification()" 
             [disabled]="loading || sendForm.invalid || getChannelsSelected() === 0">
-            <i class="fas fa-paper-plane"></i>
-            {{ loading ? 'Sending...' : (sendForm.get('scheduleNow')?.value ? 'Send Now' : 'Schedule Notification') }}
+            {{ loading ? 'Sending...' : (sendForm.get('scheduleNow')?.value ? '📤 Send Now' : '📅 Schedule Notification') }}
           </button>
         </div>
       </form>

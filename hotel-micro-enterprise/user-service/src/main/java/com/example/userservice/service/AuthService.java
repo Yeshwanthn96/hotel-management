@@ -84,7 +84,11 @@ public class AuthService {
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole("USER"); // Default role
+        // Use provided role or default to USER
+        String role = (request.getRole() != null && !request.getRole().isEmpty())
+                ? request.getRole().toUpperCase()
+                : "USER";
+        user.setRole(role);
         user.setActive(true);
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
@@ -267,5 +271,98 @@ public class AuthService {
                 hasSpecial = true;
         }
         return hasUpper && hasLower && hasDigit && hasSpecial;
+    }
+
+    /**
+     * Get user by ID - Admin only
+     */
+    public UserProfileResponse getUserById(String userId) {
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isEmpty()) {
+            throw new RuntimeException("User not found");
+        }
+        User user = userOpt.get();
+        return new UserProfileResponse(
+                user.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                user.getPhone(),
+                user.getRole(),
+                user.isActive());
+    }
+
+    /**
+     * Update user status (activate/deactivate) - Admin only
+     */
+    public Map<String, Object> updateUserStatus(String userId, boolean active) {
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isEmpty()) {
+            throw new RuntimeException("User not found");
+        }
+        User user = userOpt.get();
+        user.setActive(active);
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", active ? "User activated successfully" : "User deactivated successfully");
+        response.put("userId", userId);
+        response.put("active", active);
+        return response;
+    }
+
+    /**
+     * Update user role - Admin only
+     */
+    public Map<String, Object> updateUserRole(String userId, String role) {
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isEmpty()) {
+            throw new RuntimeException("User not found");
+        }
+        User user = userOpt.get();
+        user.setRole(role);
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "User role updated successfully");
+        response.put("userId", userId);
+        response.put("role", role);
+        return response;
+    }
+
+    /**
+     * Delete user - Admin only
+     */
+    public void deleteUser(String userId) {
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isEmpty()) {
+            throw new RuntimeException("User not found");
+        }
+        userRepository.deleteById(userId);
+    }
+
+    /**
+     * Get user statistics - Admin only
+     */
+    public Map<String, Object> getUserStats() {
+        Map<String, Object> stats = new HashMap<>();
+
+        long totalUsers = userRepository.count();
+        long activeUsers = userRepository.findAll().stream().filter(User::isActive).count();
+        long inactiveUsers = totalUsers - activeUsers;
+        long adminUsers = userRepository.findAll().stream()
+                .filter(u -> "ADMIN".equalsIgnoreCase(u.getRole()) || "admin".equals(u.getRole()))
+                .count();
+        long regularUsers = totalUsers - adminUsers;
+
+        stats.put("totalUsers", totalUsers);
+        stats.put("activeUsers", activeUsers);
+        stats.put("inactiveUsers", inactiveUsers);
+        stats.put("adminUsers", adminUsers);
+        stats.put("regularUsers", regularUsers);
+
+        return stats;
     }
 }

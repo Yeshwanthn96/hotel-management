@@ -44,7 +44,8 @@ public class BookingService {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    private static final String HOTEL_SERVICE_URL = "http://localhost:8092/api/hotels";
+    private static final String HOTEL_SERVICE_URL = "http://localhost:8081/api/hotels";
+    private static final String NOTIFICATION_SERVICE_URL = "http://localhost:8095/api/notifications";
 
     @PostConstruct
     public void init() {
@@ -116,6 +117,16 @@ public class BookingService {
             boolean success = confirmBookingStep.execute(context);
             if (success) {
                 bookingRepository.save(booking);
+
+                // Send notification to user
+                sendNotificationToUser(
+                        booking.getUserId(),
+                        "BOOKING_CONFIRMED",
+                        "Booking Confirmed! 🎉",
+                        "Your booking #" + booking.getId().substring(0, 8)
+                                + " has been confirmed. Thank you for choosing our hotel!",
+                        booking.getId());
+
                 BookingResponse response = new BookingResponse(booking);
                 response.setMessage("Booking confirmed successfully");
                 return response;
@@ -153,6 +164,80 @@ public class BookingService {
         return response;
     }
 
+    public BookingResponse holdBooking(String bookingId, String reason) {
+        logger.info("Putting booking on hold: {}", bookingId);
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        if (booking.getStatus() == BookingStatus.CANCELLED ||
+                booking.getStatus() == BookingStatus.CONFIRMED) {
+            throw new RuntimeException("Cannot hold booking in current state: " + booking.getStatus());
+        }
+
+        booking.setStatus(BookingStatus.ON_HOLD);
+        booking.setCancellationReason("ON HOLD: " + reason);
+        bookingRepository.save(booking);
+
+        BookingResponse response = new BookingResponse(booking);
+        response.setMessage("Booking put on hold: " + reason);
+        return response;
+    }
+
+    public BookingResponse resumeBooking(String bookingId) {
+        logger.info("Resuming booking from hold: {}", bookingId);
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        if (booking.getStatus() != BookingStatus.ON_HOLD) {
+            throw new RuntimeException("Booking is not on hold, current state: " + booking.getStatus());
+        }
+
+        // Resume to PENDING status so user can continue with payment
+        booking.setStatus(BookingStatus.PENDING);
+        booking.setCancellationReason(null);
+        bookingRepository.save(booking);
+
+        BookingResponse response = new BookingResponse(booking);
+        response.setMessage("Booking resumed from hold");
+        return response;
+    }
+
+    public BookingResponse rejectBooking(String bookingId, String reason) {
+        logger.info("Rejecting booking: {}", bookingId);
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        if (booking.getStatus() == BookingStatus.CANCELLED) {
+            throw new RuntimeException("Booking already cancelled");
+        }
+
+        booking.setStatus(BookingStatus.REJECTED);
+        booking.setCancellationReason("REJECTED: " + reason);
+        bookingRepository.save(booking);
+
+        // Trigger refund if payment was completed
+        if (booking.getPaymentId() != null) {
+            logger.info("Triggering refund for rejected booking payment: {}", booking.getPaymentId());
+            // Call payment service to refund
+        }
+
+        // Send notification to user
+        sendNotificationToUser(
+                booking.getUserId(),
+                "BOOKING_REJECTED",
+                "Booking Update ❌",
+                "Unfortunately, your booking #" + booking.getId().substring(0, 8) + " could not be confirmed. Reason: "
+                        + reason,
+                booking.getId());
+
+        BookingResponse response = new BookingResponse(booking);
+        response.setMessage("Booking rejected and refund initiated: " + reason);
+        return response;
+    }
+
     public BookingResponse getBooking(String bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
@@ -186,11 +271,11 @@ public class BookingService {
                 response.setHotelName((String) hotelResponse.get("name"));
             }
 
-            // Fetch room details
-            String roomUrl = HOTEL_SERVICE_URL + "/" + response.getHotelId() + "/rooms/" + response.getRoomId();
+            // Fetch room details - rooms are accessed via /api/rooms/{id}
+            String roomUrl = "http://localhost:8081/api/rooms/" + response.getRoomId();
             java.util.Map<String, Object> roomResponse = restTemplate.getForObject(roomUrl, java.util.Map.class);
             if (roomResponse != null) {
-                response.setRoomType((String) roomResponse.get("type"));
+                response.setRoomType((String) roomResponse.get("roomType"));
                 Object roomNumber = roomResponse.get("roomNumber");
                 response.setRoomNumber(roomNumber != null ? roomNumber.toString() : "N/A");
             }
@@ -227,5 +312,25 @@ public class BookingService {
                 .map(Booking::getHotelId)
                 .distinct()
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Send notification to user via notification service
+     */
+    private void sendNotificationToUser(String userId, String type, String title, String message, String referenceId) {
+        try {
+            java.util.Map<String, String> notificationRequest = new java.util.HashMap<>();
+            notificationRequest.put("userId", userId);
+            notificationRequest.put("type", type);
+            notificationRequest.put("title", title);
+            notificationRequest.put("message", message);
+            notificationRequest.put("referenceId", referenceId);
+
+            restTemplate.postForObject(NOTIFICATION_SERVICE_URL, notificationRequest, Object.class);
+            logger.info("Notification sent to user: {} - {}", userId, title);
+        } catch (Exception e) {
+            logger.warn("Failed to send notification to user {}: {}", userId, e.getMessage());
+            // Don't fail the booking operation if notification fails
+        }
     }
 }

@@ -9,50 +9,72 @@
           {{ authService.isAdmin() ? 'Moderate and manage all customer reviews' : 'Reviews you have written for hotels' }}
         </p>
       </div>
-      <button *ngIf="!authService.isAdmin()" routerLink="/reviews/add" class="btn btn-primary">+ Add Review</button>
+      <button *ngIf="!authService.isAdmin()" routerLink="/reviews/add" class="btn btn-primary">+ Write Review</button>
     </div>
     
     <div *ngIf="reviews && reviews.length > 0; else emptyState">
-      <table>
-        <thead>
-          <tr>
-            <th>Review ID</th>
-            <th *ngIf="authService.isAdmin()">User ID</th>
-            <th>Hotel ID</th>
-            <th>Rating</th>
-            <th>Title</th>
-            <th>Comment</th>
-            <th>Status</th>
-            <th>Date</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let review of reviews">
-            <td>{{review.id}}</td>
-            <td *ngIf="authService.isAdmin()"><strong>{{review.userId}}</strong></td>
-            <td>{{review.hotelId}}</td>
-            <td>{{getStars(review.rating)}} ({{review.rating}}/5)</td>
-            <td>{{review.title}}</td>
-            <td>{{review.comment}}</td>
-            <td>
-              <span *ngIf="review.verified" style="background: #28a745; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">✓ Verified</span>
-              <span *ngIf="!review.verified" style="background: #6c757d; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Unverified</span>
-            </td>
-            <td>{{review.createdAt | date:'short'}}</td>
-            <td>
-              <!-- Admin: Approve/Reject actions -->
-              <div *ngIf="authService.isAdmin()" style="display: flex; gap: 5px;">
-                <button *ngIf="!review.verified" (click)="approveReview(review)" class="btn btn-success" style="padding: 6px 12px; font-size: 12px;">✓ Approve</button>
-                <button *ngIf="review.verified" (click)="rejectReview(review)" class="btn btn-warning" style="padding: 6px 12px; font-size: 12px;">✗ Reject</button>
-                <button (click)="deleteReview(review)" class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;">Delete</button>
-              </div>
-              <!-- User: Delete own review only -->
-              <button *ngIf="!authService.isAdmin()" (click)="deleteReview(review)" class="btn btn-danger" style="padding: 6px 12px;">Delete</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <!-- Card-style reviews for better UX -->
+      <div *ngFor="let review of reviews" style="border: 1px solid #e0e0e0; border-radius: 12px; padding: 20px; margin-bottom: 16px; background: #fff;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+          <div>
+            <h3 style="margin: 0 0 4px 0; color: #333;">{{ review.title }}</h3>
+            <p style="margin: 0; color: #666; font-size: 14px;">
+              🏨 <strong>{{ getHotelName(review.hotelId) }}</strong>
+            </p>
+            <!-- Show user info for admin -->
+            <p *ngIf="authService.isAdmin()" style="margin: 4px 0 0 0; color: #888; font-size: 13px;">
+              👤 Reviewed by: <strong>{{ review.userName || getUserName(review.userId) }}</strong>
+            </p>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 18px;">{{ getStars(review.rating) }}</div>
+            <span style="font-size: 12px; color: #999;">{{ review.createdAt | date:'mediumDate' }}</span>
+          </div>
+        </div>
+        
+        <p style="color: #444; line-height: 1.6; margin: 12px 0;">{{ review.comment }}</p>
+        
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+          <span *ngIf="review.verified" style="background: #28a745; color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px;">✓ Verified Stay</span>
+          <span *ngIf="!review.verified" style="background: #6c757d; color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px;">Pending Verification</span>
+        </div>
+        
+        <!-- Admin Reply Section (visible to users) -->
+        <div *ngIf="review.adminReply" style="background: #e8f5e9; border-left: 4px solid #4caf50; padding: 15px; border-radius: 8px; margin: 15px 0;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <span style="font-size: 18px;">🏨</span>
+            <strong style="color: #2e7d32;">Hotel Response</strong>
+          </div>
+          <p style="margin: 0; color: #333; line-height: 1.5;">{{ review.adminReply }}</p>
+          
+          <!-- User can reply back -->
+          <button *ngIf="!authService.isAdmin()" (click)="openReplyModal(review)" 
+                  style="margin-top: 10px; background: #4caf50; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px;">
+            💬 Reply to Hotel
+          </button>
+        </div>
+
+        <!-- User's reply to admin -->
+        <div *ngIf="review.userReply" style="background: #e3f2fd; border-left: 4px solid #2196f3; padding: 15px; border-radius: 8px; margin: 10px 0;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <span style="font-size: 18px;">👤</span>
+            <strong style="color: #1565c0;">Your Reply</strong>
+          </div>
+          <p style="margin: 0; color: #333; line-height: 1.5;">{{ review.userReply }}</p>
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
+          <!-- Admin Actions -->
+          <div *ngIf="authService.isAdmin()" style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button (click)="openAdminReplyModal(review)" class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;">💬 Reply</button>
+            <button *ngIf="!review.verified" (click)="approveReview(review)" class="btn btn-success" style="padding: 6px 12px; font-size: 12px;">✓ Approve</button>
+            <button *ngIf="review.verified" (click)="rejectReview(review)" class="btn btn-warning" style="padding: 6px 12px; font-size: 12px;">✗ Reject</button>
+            <button (click)="deleteReview(review)" class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;">Delete</button>
+          </div>
+          <!-- User Actions -->
+          <button *ngIf="!authService.isAdmin()" (click)="deleteReview(review)" class="btn btn-danger" style="padding: 6px 12px;">Delete My Review</button>
+        </div>
+      </div>
     </div>
     
     <ng-template #emptyState>
@@ -60,7 +82,53 @@
         <h3>{{ authService.isAdmin() ? 'No Reviews in System' : 'No Reviews Yet' }}</h3>
         <p *ngIf="authService.isAdmin()">No customer reviews have been submitted yet</p>
         <p *ngIf="!authService.isAdmin()">You haven't written any reviews yet. Share your experience after your stays!</p>
+        <button *ngIf="!authService.isAdmin()" routerLink="/reviews/add" class="btn btn-primary" style="margin-top: 15px;">Write Your First Review</button>
       </div>
     </ng-template>
+  </div>
+</div>
+
+<!-- User Reply Modal -->
+<div *ngIf="showReplyModal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+  <div style="background: white; padding: 25px; border-radius: 12px; max-width: 500px; width: 90%;">
+    <h3 style="margin: 0 0 15px 0;">Reply to Hotel Response</h3>
+    <p style="color: #666; font-size: 14px; margin-bottom: 15px;">The hotel will be notified of your reply.</p>
+    <textarea [(ngModel)]="userReply" placeholder="Write your reply..." 
+              style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; min-height: 100px; font-size: 14px; resize: vertical;"></textarea>
+    <div style="display: flex; gap: 10px; margin-top: 15px; justify-content: flex-end;">
+      <button (click)="closeReplyModal()" style="padding: 10px 20px; border: 1px solid #ddd; background: white; border-radius: 6px; cursor: pointer;">Cancel</button>
+      <button (click)="submitUserReply()" [disabled]="!userReply.trim()" class="btn btn-primary" style="padding: 10px 20px;">Send Reply</button>
+    </div>
+  </div>
+</div>
+
+<!-- Admin Reply Modal -->
+<div *ngIf="showAdminReplyModal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+  <div style="background: white; padding: 25px; border-radius: 12px; max-width: 600px; width: 90%;">
+    <h3 style="margin: 0 0 15px 0;">🏨 Respond to Review</h3>
+    
+    <!-- Review Summary -->
+    <div *ngIf="selectedReview" style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+          <strong>{{ selectedReview.title }}</strong>
+          <p style="margin: 5px 0 0 0; font-size: 13px; color: #666;">by {{ selectedReview.userName || 'Anonymous' }}</p>
+        </div>
+        <span style="font-size: 16px;">{{ getStars(selectedReview.rating) }}</span>
+      </div>
+      <p style="margin: 10px 0 0 0; font-size: 14px; color: #444;">{{ selectedReview.comment }}</p>
+    </div>
+    
+    <label style="font-weight: 600; color: #333; display: block; margin-bottom: 8px;">Your Response:</label>
+    <textarea [(ngModel)]="adminReply" placeholder="Write a professional response to this customer review..." 
+              style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; min-height: 120px; font-size: 14px; resize: vertical;"></textarea>
+    <p style="font-size: 12px; color: #888; margin: 8px 0 0 0;">This response will be visible to all users viewing this review.</p>
+    
+    <div style="display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end;">
+      <button (click)="closeAdminReplyModal()" style="padding: 10px 20px; border: 1px solid #ddd; background: white; border-radius: 6px; cursor: pointer;">Cancel</button>
+      <button (click)="submitAdminReply()" [disabled]="!adminReply.trim()" class="btn btn-primary" style="padding: 10px 20px;">
+        {{ selectedReview?.adminReply ? 'Update Response' : 'Post Response' }}
+      </button>
+    </div>
   </div>
 </div>

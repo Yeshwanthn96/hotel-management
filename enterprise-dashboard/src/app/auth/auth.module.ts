@@ -10,17 +10,15 @@ import { ForgotPasswordComponent } from './forgot-password/forgot-password.compo
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
 import { ChangePasswordComponent } from './change-password/change-password.component';
 import { RegisterComponent } from './register/register.component';
-import { AdminLoginComponent } from './admin-login/admin-login.component';
 
 @NgModule({
-  declarations: [LoginComponent, ForgotPasswordComponent, ResetPasswordComponent, ChangePasswordComponent, RegisterComponent, AdminLoginComponent],
+  declarations: [LoginComponent, ForgotPasswordComponent, ResetPasswordComponent, ChangePasswordComponent, RegisterComponent],
   imports: [
     CommonModule,
     FormsModule,
     RouterModule.forChild([
       { path: '', redirectTo: 'login', pathMatch: 'full' },
       { path: 'login', component: LoginComponent },
-      { path: 'admin-login', component: AdminLoginComponent },
       { path: 'register', component: RegisterComponent },
       { path: 'forgot-password', component: ForgotPasswordComponent },
       { path: 'reset-password', component: ResetPasswordComponent },

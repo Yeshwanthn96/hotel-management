@@ -114,6 +114,54 @@ public class BookingController {
         }
     }
 
+    @PutMapping("/{id}/hold")
+    public ResponseEntity<BookingResponse> holdBooking(
+            @PathVariable String id,
+            @RequestBody Map<String, String> request) {
+        try {
+            String reason = request.getOrDefault("reason", "Admin put booking on hold");
+            logger.info("Putting booking on hold: {}", id);
+            BookingResponse response = bookingService.holdBooking(id, reason);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Error holding booking: {}", e.getMessage());
+            BookingResponse errorResponse = new BookingResponse();
+            errorResponse.setMessage("Failed to hold booking: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
+    @PutMapping("/{id}/resume")
+    public ResponseEntity<BookingResponse> resumeBooking(@PathVariable String id) {
+        try {
+            logger.info("Resuming booking from hold: {}", id);
+            BookingResponse response = bookingService.resumeBooking(id);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Error resuming booking: {}", e.getMessage());
+            BookingResponse errorResponse = new BookingResponse();
+            errorResponse.setMessage("Failed to resume booking: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
+    @PutMapping("/{id}/reject")
+    public ResponseEntity<BookingResponse> rejectBooking(
+            @PathVariable String id,
+            @RequestBody Map<String, String> request) {
+        try {
+            String reason = request.getOrDefault("reason", "Admin rejected booking");
+            logger.info("Rejecting booking: {}", id);
+            BookingResponse response = bookingService.rejectBooking(id, reason);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Error rejecting booking: {}", e.getMessage());
+            BookingResponse errorResponse = new BookingResponse();
+            errorResponse.setMessage("Failed to reject booking: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
     /**
      * Get list of hotels where user has completed stays (for reviews)
      */

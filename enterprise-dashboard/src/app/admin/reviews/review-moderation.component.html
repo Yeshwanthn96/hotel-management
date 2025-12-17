@@ -1,12 +1,7 @@
 <div class="review-moderation-container">
   <div class="header">
-    <h1>Review Moderation</h1>
-    <div class="stats">
-      <div class="stat-card">
-        <span class="stat-value">{{ filteredReviews.length }}</span>
-        <span class="stat-label">Total Reviews</span>
-      </div>
-    </div>
+    <h1>All Reviews Management</h1>
+    <p class="subtitle">Moderate and manage all customer reviews</p>
   </div>
 
   <!-- Success/Error Messages -->
@@ -52,43 +47,68 @@
 
   <!-- Reviews List -->
   <div class="reviews-list" *ngIf="!loading">
-    <div class="review-card" *ngFor="let review of filteredReviews" (click)="openDetailModal(review)">
+    <div class="review-card" *ngFor="let review of filteredReviews">
+      <!-- Review Header with User and Hotel Info -->
       <div class="review-header">
-        <div class="user-info">
-          <div class="avatar">{{ review.userName?.charAt(0) || 'U' }}</div>
-          <div class="info">
-            <h3>{{ review.userName || 'User' }}</h3>
-            <p class="hotel-name">{{ review.hotelName }}</p>
-          </div>
+        <div class="review-title-section">
+          <h3 class="review-title">{{ review.title }}</h3>
+          <p class="hotel-info">🏨 {{ review.hotelName || 'Unknown Hotel' }}</p>
         </div>
         <div class="review-meta">
           <div class="rating">
             <span *ngFor="let star of getStarsArray(review.rating)" class="star filled">★</span>
-            <span *ngFor="let star of getEmptyStarsArray(review.rating)" class="star">★</span>
+            <span *ngFor="let star of getEmptyStarsArray(review.rating)" class="star empty">☆</span>
           </div>
-          <span class="date">{{ review.createdAt | date:'MMM d, y' }}</span>
+          <span class="date">{{ review.createdAt | date:'MMM d, yyyy' }}</span>
         </div>
       </div>
 
+      <!-- User Info -->
+      <div class="user-info-row">
+        <span class="user-label">👤 Reviewed by:</span>
+        <span class="user-name">{{ review.userName || 'Anonymous' }}</span>
+        <span class="user-email" *ngIf="review.userEmail">({{ review.userEmail }})</span>
+      </div>
+
+      <!-- Review Content -->
       <div class="review-content">
-        <h4>{{ review.title }}</h4>
         <p>{{ review.comment }}</p>
       </div>
 
-      <div class="review-footer">
-        <span class="status-badge" [ngClass]="'status-' + review.status?.toLowerCase().replace('_', '-')">
-          {{ review.status?.replace('_', ' ') }}
+      <!-- Verified Badge -->
+      <div class="review-badges">
+        <span class="verified-badge" *ngIf="review.verified">✓ Verified Stay</span>
+        <span class="status-badge" [ngClass]="'status-' + (review.status?.toLowerCase().replace('_', '-') || 'pending')">
+          {{ review.status?.replace('_', ' ') || 'PENDING' }}
         </span>
-        <div class="quick-actions">
-          <button class="btn-icon" title="View Details">
-            <i class="fas fa-eye"></i>
-          </button>
+      </div>
+
+      <!-- Existing Admin Reply -->
+      <div class="admin-reply-display" *ngIf="review.adminReply">
+        <div class="reply-header">
+          <strong>🏨 Hotel Response:</strong>
         </div>
+        <p class="reply-text">{{ review.adminReply }}</p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="review-actions">
+        <button class="btn btn-sm btn-primary" (click)="openDetailModal(review)">
+          📝 View & Reply
+        </button>
+        <button class="btn btn-sm btn-success" *ngIf="review.status === 'PENDING_APPROVAL'" (click)="quickApprove(review)">
+          ✓ Approve
+        </button>
+        <button class="btn btn-sm btn-warning" *ngIf="review.status !== 'REJECTED'" (click)="openRejectModal(review)">
+          ✗ Reject
+        </button>
+        <button class="btn btn-sm btn-danger" (click)="quickDelete(review)">
+          Delete
+        </button>
       </div>
     </div>
 
     <div *ngIf="filteredReviews.length === 0" class="no-data">
-      <i class="fas fa-comment-slash"></i>
       <p>No reviews found</p>
     </div>
   </div>

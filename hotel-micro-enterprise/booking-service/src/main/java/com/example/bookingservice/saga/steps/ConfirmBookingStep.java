@@ -16,23 +16,24 @@ public class ConfirmBookingStep implements SagaStep {
     public boolean execute(SagaContext context) {
         Booking booking = context.getBooking();
 
-        logger.info("Confirming booking {}", booking.getId());
+        logger.info("Processing booking {} - awaiting admin approval", booking.getId());
 
         try {
-            // Mark booking as confirmed
-            booking.setStatus(BookingStatus.CONFIRMED);
+            // After payment success, set status to PAYMENT_PENDING (awaiting admin
+            // approval)
+            // Admin will change it to CONFIRMED after review
+            booking.setStatus(BookingStatus.PAYMENT_PENDING);
 
-            // Send confirmation email/notification
-            logger.info("Sending confirmation notification for booking {}", booking.getId());
-            // In production: notificationService.sendBookingConfirmation(booking);
+            // Log that booking is pending admin approval
+            logger.info("Booking {} is now PAYMENT_PENDING - awaiting admin approval", booking.getId());
 
             context.putData("bookingConfirmed", true);
 
-            logger.info("Booking {} confirmed successfully", booking.getId());
+            logger.info("Booking {} processed successfully - pending admin approval", booking.getId());
             return true;
 
         } catch (Exception e) {
-            logger.error("Failed to confirm booking {}: {}", booking.getId(), e.getMessage());
+            logger.error("Failed to process booking {}: {}", booking.getId(), e.getMessage());
             return false;
         }
     }

@@ -9,10 +9,15 @@ export class JwtInterceptor implements HttpInterceptor {
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const token = this.authService.getToken();
+    const userId = this.authService.getUserId();
+    const role = this.authService.isAdmin() ? 'ADMIN' : 'USER';
+    
     if (token) {
       request = request.clone({
         setHeaders: {
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
+          'X-User-Id': userId || '',
+          'X-User-Role': role
         }
       });
     }

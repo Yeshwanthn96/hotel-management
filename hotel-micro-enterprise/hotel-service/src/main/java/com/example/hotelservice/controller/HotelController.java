@@ -113,4 +113,28 @@ public class HotelController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
         }
     }
+
+    @PutMapping("/{id}/activate")
+    public ResponseEntity<?> activateHotel(@PathVariable String id) {
+        try {
+            HotelResponse response = hotelService.activateHotel(id);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        }
+    }
+
+    @PutMapping("/{id}/deactivate")
+    public ResponseEntity<?> deactivateHotel(@PathVariable String id) {
+        try {
+            HotelResponse response = hotelService.deactivateHotel(id);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        }
+    }
 }

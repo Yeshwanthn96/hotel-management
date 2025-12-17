@@ -61,4 +61,16 @@ export class BookingsService {
   getAllBookings(): Observable<Booking[]> {
     return this.http.get<Booking[]>(this.base);
   }
+  
+  holdBooking(bookingId: string, reason: string): Observable<Booking> {
+    return this.http.put<Booking>(`${this.base}/${bookingId}/hold`, { reason });
+  }
+  
+  resumeBooking(bookingId: string): Observable<Booking> {
+    return this.http.put<Booking>(`${this.base}/${bookingId}/resume`, {});
+  }
+  
+  rejectBooking(bookingId: string, reason: string): Observable<Booking> {
+    return this.http.put<Booking>(`${this.base}/${bookingId}/reject`, { reason });
+  }
 }

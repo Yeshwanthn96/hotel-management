@@ -49,6 +49,7 @@ export class BookingsAddComponent implements OnInit {
   paymentInfo = '';
   bookingId = '';
   isProcessing = false;
+  minDate: string = '';
   
   constructor(
     private bookingService: BookingsService,
@@ -60,6 +61,10 @@ export class BookingsAddComponent implements OnInit {
   ) {}
   
   ngOnInit(): void {
+    // Set minimum date to today
+    const today = new Date();
+    this.minDate = today.toISOString().split('T')[0];
+    
     // Check if user is authenticated
     if (!this.authService.isAuthenticated()) {
       alert('Please login to make a booking');

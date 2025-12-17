@@ -135,6 +135,28 @@ public class RoomService {
         return new RoomResponse(updatedRoom);
     }
 
+    public RoomResponse activateRoom(String id) {
+        Room room = roomRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Room not found"));
+
+        room.setActive(true);
+        room.setUpdatedAt(LocalDateTime.now());
+
+        Room updatedRoom = roomRepository.save(room);
+        return new RoomResponse(updatedRoom);
+    }
+
+    public RoomResponse deactivateRoom(String id) {
+        Room room = roomRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Room not found"));
+
+        room.setActive(false);
+        room.setUpdatedAt(LocalDateTime.now());
+
+        Room updatedRoom = roomRepository.save(room);
+        return new RoomResponse(updatedRoom);
+    }
+
     public RoomResponse updateRoomPricing(String id, Double newPrice) {
         Room room = roomRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Room not found"));

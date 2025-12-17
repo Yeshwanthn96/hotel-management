@@ -11,11 +11,12 @@
 
   <!-- Hotels Grid -->
   <div *ngIf="!isLoading && hotels.length > 0" class="hotels-grid">
-    <div *ngFor="let hotel of hotels" class="hotel-card">
+    <div *ngFor="let hotel of hotels" class="hotel-card" [class.inactive]="!hotel.active">
       <div class="hotel-image">
         <img [src]="hotel.images && hotel.images.length > 0 ? hotel.images[0] : 'https://via.placeholder.com/400x250?text=Hotel+Image'" 
              [alt]="hotel.name">
         <div class="hotel-rating">⭐ {{ hotel.rating || '4.0' }}</div>
+        <div *ngIf="!hotel.active" class="inactive-badge">INACTIVE</div>
       </div>
       <div class="hotel-content">
         <h3>{{ hotel.name }}</h3>
@@ -34,6 +35,10 @@
         <div class="hotel-actions">
           <button class="btn-icon" (click)="openEditModal(hotel)" title="Edit">
             ✏️
+          </button>
+          <button class="btn-icon" [class.warning]="hotel.active" [class.success]="!hotel.active" 
+                  (click)="toggleHotelStatus(hotel)" [title]="hotel.active ? 'Deactivate' : 'Activate'">
+            {{ hotel.active ? '⏸️' : '▶️' }}
           </button>
           <button class="btn-icon danger" (click)="deleteHotel(hotel)" title="Delete">
             🗑️
@@ -137,6 +142,91 @@
         <button type="submit" class="btn btn-primary" [disabled]="isLoading">
           <span *ngIf="!isLoading">Add Hotel</span>
           <span *ngIf="isLoading">Adding...</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Hotel Modal -->
+<div *ngIf="showEditModal" class="modal-overlay" (click)="closeEditModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Edit Hotel</h2>
+      <button class="close-btn" (click)="closeEditModal()">&times;</button>
+    </div>
+
+    <form (ngSubmit)="updateHotel()">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="edit-name">Hotel Name *</label>
+          <input type="text" id="edit-name" [(ngModel)]="editHotel.name" name="editName" 
+                 placeholder="Grand Plaza Hotel" required>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-city">City *</label>
+          <input type="text" id="edit-city" [(ngModel)]="editHotel.city" name="editCity" 
+                 placeholder="New York" required>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-state">State *</label>
+          <input type="text" id="edit-state" [(ngModel)]="editHotel.state" name="editState" 
+                 placeholder="NY" required>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-zipCode">Zip Code</label>
+          <input type="text" id="edit-zipCode" [(ngModel)]="editHotel.zipCode" name="editZipCode" 
+                 placeholder="10001">
+        </div>
+
+        <div class="form-group full-width">
+          <label for="edit-address">Address *</label>
+          <input type="text" id="edit-address" [(ngModel)]="editHotel.address" name="editAddress" 
+                 placeholder="123 Main Street" required>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-phone">Phone</label>
+          <input type="tel" id="edit-phone" [(ngModel)]="editHotel.phone" name="editPhone" 
+                 placeholder="+1 (555) 123-4567">
+        </div>
+
+        <div class="form-group">
+          <label for="edit-email">Email</label>
+          <input type="email" id="edit-email" [(ngModel)]="editHotel.email" name="editEmail" 
+                 placeholder="info@hotel.com">
+        </div>
+
+        <div class="form-group full-width">
+          <label for="edit-description">Description</label>
+          <textarea id="edit-description" [(ngModel)]="editHotel.description" name="editDescription" 
+                    rows="3" placeholder="Enter hotel description..."></textarea>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Amenities</label>
+          <div class="amenities-selector">
+            <button *ngFor="let amenity of availableAmenities" 
+                    type="button"
+                    class="amenity-btn"
+                    [class.selected]="isEditAmenitySelected(amenity)"
+                    (click)="toggleEditAmenity(amenity)">
+              {{ amenity }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeEditModal()">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+          <span *ngIf="!isLoading">Update Hotel</span>
+          <span *ngIf="isLoading">Updating...</span>
         </button>
       </div>
     </form>

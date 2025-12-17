@@ -18,7 +18,7 @@ import { AppComponent } from './app.component';
     FormsModule,
     HttpClientModule,
     RouterModule.forRoot([
-      { path: '', redirectTo: 'auth/login', pathMatch: 'full' },
+      { path: '', redirectTo: 'hotels', pathMatch: 'full' },
       { path: 'auth', loadChildren: () => import('./auth/auth.module').then(m => m.AuthModule) },
       { path: 'login', redirectTo: 'auth/login', pathMatch: 'full' },
       
@@ -35,7 +35,12 @@ import { AppComponent } from './app.component';
         canActivate: [RoleGuard],
         data: { roles: ['ADMIN'] }
       },
-
+      { 
+        path: 'reviews', 
+        loadChildren: () => import('./reviews/reviews.module').then(m => m.ReviewsModule),
+        canActivate: [RoleGuard],
+        data: { roles: ['ADMIN'] }
+      },
       { 
         path: 'notifications', 
         loadChildren: () => import('./notifications/notifications.module').then(m => m.NotificationsModule),
@@ -62,6 +67,16 @@ import { AppComponent } from './app.component';
       { 
         path: 'payments', 
         loadChildren: () => import('./payments/payments.module').then(m => m.PaymentsModule),
+        canActivate: [AuthGuard]
+      },
+      { 
+        path: 'user-notifications', 
+        loadChildren: () => import('./user-notifications/user-notifications.module').then(m => m.UserNotificationsModule),
+        canActivate: [AuthGuard]
+      },
+      { 
+        path: 'my-reviews', 
+        loadChildren: () => import('./my-reviews/my-reviews.module').then(m => m.MyReviewsModule),
         canActivate: [AuthGuard]
       }
     ])

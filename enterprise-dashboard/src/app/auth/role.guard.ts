@@ -32,8 +32,8 @@ export class RoleGuard implements CanActivate {
       return true;
     }
 
-    // User doesn't have required role
-    alert('Access Denied: You do not have permission to access this page.');
+    // User doesn't have required role - silently redirect (no alert)
+    console.warn('Access denied - insufficient permissions for route:', state.url);
     return this.router.createUrlTree(['/hotels']);
   }
 }

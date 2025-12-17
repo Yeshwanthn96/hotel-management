@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { AuthService } from './auth/auth.service';
 
 @Component({
@@ -8,10 +9,24 @@ import { AuthService } from './auth/auth.service';
     <div class="luxury-header">
       <div class="logo">LUXURY HOTELS</div>
       <nav>
-        <a routerLink="/hotels" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}">Hotels</a>
-        <a *ngIf="isLoggedIn()" routerLink="/bookings" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}">My Bookings</a>
-        <a *ngIf="isLoggedIn() && !isAdmin()" routerLink="/payments" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}">Payments</a>
-        <a *ngIf="isAdmin()" routerLink="/admin/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}">Admin Dashboard</a>
+        <a routerLink="/hotels" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}">HOTELS</a>
+        
+        <!-- User Menu Items -->
+        <a *ngIf="isLoggedIn() && !isAdmin()" routerLink="/bookings" routerLinkActive="active">MY BOOKINGS</a>
+        <a *ngIf="isLoggedIn() && !isAdmin()" routerLink="/my-reviews" routerLinkActive="active">MY REVIEWS</a>
+        <a *ngIf="isLoggedIn() && !isAdmin()" routerLink="/user-notifications" routerLinkActive="active">
+          NOTIFICATIONS
+          <span *ngIf="unreadCount > 0" class="notification-badge">{{ unreadCount }}</span>
+        </a>
+        
+        <!-- Admin Menu Items -->
+        <a *ngIf="isAdmin()" routerLink="/admin/dashboard" routerLinkActive="active">DASHBOARD</a>
+        <a *ngIf="isAdmin()" routerLink="/admin/hotels" routerLinkActive="active">MANAGE HOTELS</a>
+        <a *ngIf="isAdmin()" routerLink="/bookings" routerLinkActive="active">ALL BOOKINGS</a>
+        <a *ngIf="isAdmin()" routerLink="/users" routerLinkActive="active">USERS</a>
+        <a *ngIf="isAdmin()" routerLink="/reviews" routerLinkActive="active">REVIEWS</a>
+        <a *ngIf="isAdmin()" routerLink="/notifications" routerLinkActive="active">NOTIFICATIONS</a>
+        
         <a *ngIf="!isLoggedIn()" routerLink="/auth/login" class="login-btn">Login</a>
         <div *ngIf="isLoggedIn()" style="display: flex; align-items: center; gap: 15px;">
           <span style="color: #d4af37; font-size: 14px;">{{ getUserEmail() }} ({{ getUserRole() }})</span>
@@ -31,8 +46,35 @@ import { AuthService } from './auth/auth.service';
     <router-outlet></router-outlet>
   `
 })
-export class AppComponent {
-  constructor(private router: Router, private authService: AuthService) {}
+export class AppComponent implements OnInit {
+  unreadCount: number = 0;
+  private notificationApiUrl = 'http://localhost:8080/api/notifications';
+
+  constructor(
+    private router: Router, 
+    private authService: AuthService,
+    private http: HttpClient
+  ) {}
+
+  ngOnInit() {
+    // Load unread count if user is logged in
+    this.loadUnreadCount();
+    // Reload count periodically
+    setInterval(() => this.loadUnreadCount(), 30000); // Every 30 seconds
+  }
+
+  loadUnreadCount() {
+    if (this.isLoggedIn() && !this.isAdmin()) {
+      const userId = this.authService.getCurrentUser()?.id;
+      if (userId) {
+        this.http.get<{count: number}>(`${this.notificationApiUrl}/user/${userId}/unread-count`)
+          .subscribe({
+            next: (response) => this.unreadCount = response.count || 0,
+            error: () => this.unreadCount = 0
+          });
+      }
+    }
+  }
 
   showHero() {
     return this.router.url === '/' || this.router.url === '/hotels';

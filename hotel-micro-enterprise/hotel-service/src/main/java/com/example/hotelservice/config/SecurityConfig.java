@@ -26,8 +26,12 @@ public class SecurityConfig {
                 // Public read access for browsing
                 .antMatchers("/api/hotels", "/api/hotels/*", "/api/hotels/*/rooms").permitAll()
                 .antMatchers("/api/hotels/health", "/api/hotels/active", "/api/hotels/search").permitAll()
+                .antMatchers("/api/hotels/*/toggle-status").permitAll()
+                .antMatchers("/api/hotels/*/activate", "/api/hotels/*/deactivate").permitAll()
                 .antMatchers("/api/rooms", "/api/rooms/*", "/api/rooms/hotel/*", "/api/rooms/hotel/*/available")
                 .permitAll()
+                .antMatchers("/api/rooms/*/toggle-availability").permitAll()
+                .antMatchers("/api/rooms/*/activate", "/api/rooms/*/deactivate").permitAll()
                 // Write operations require authentication
                 .antMatchers("/api/hotels/**").authenticated()
                 .antMatchers("/api/rooms/**").authenticated()

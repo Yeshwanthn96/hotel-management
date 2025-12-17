@@ -74,6 +74,58 @@
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
+.hotel-card.inactive {
+  opacity: 0.7;
+  border: 2px solid #fca5a5;
+}
+
+.hotel-card.inactive .hotel-image::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.status-badge.active {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge.inactive {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.btn-icon.warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.btn-icon.warning:hover {
+  background: #fde68a;
+}
+
+.btn-icon.success {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.btn-icon.success:hover {
+  background: #a7f3d0;
+}
+
 .hotel-image {
   position: relative;
   height: 200px;

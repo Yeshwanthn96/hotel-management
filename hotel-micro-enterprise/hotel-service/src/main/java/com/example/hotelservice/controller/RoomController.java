@@ -113,6 +113,30 @@ public class RoomController {
         }
     }
 
+    @PutMapping("/{id}/activate")
+    public ResponseEntity<?> activateRoom(@PathVariable String id) {
+        try {
+            RoomResponse response = roomService.activateRoom(id);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        }
+    }
+
+    @PutMapping("/{id}/deactivate")
+    public ResponseEntity<?> deactivateRoom(@PathVariable String id) {
+        try {
+            RoomResponse response = roomService.deactivateRoom(id);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        }
+    }
+
     @PatchMapping("/{id}/pricing")
     public ResponseEntity<?> updateRoomPricing(
             @PathVariable String id,

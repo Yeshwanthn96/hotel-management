@@ -1,8 +1,7 @@
 <div class="container">
   <div class="card">
     <div class="header">
-      <h2 class="card-title">Hotels Management</h2>
-      <button *ngIf="authService.isAdmin()" routerLink="/hotels/add" class="btn btn-primary">+ Add Hotel</button>
+      <h2 class="card-title">Browse Hotels</h2>
     </div>
 
     <!-- Error Message -->
@@ -85,30 +84,16 @@
         
         <div class="hotel-details">
           <p><strong>📍 Location:</strong> {{ hotel.city }}, {{ hotel.state }}</p>
-          <p><strong>📧 Email:</strong> {{ hotel.email }}</p>
-          <p><strong>📞 Phone:</strong> {{ hotel.phone }}</p>
           <p class="description">{{ hotel.description }}</p>
           
           <div class="amenities">
-            <span *ngFor="let amenity of hotel.amenities" class="amenity-badge">{{ amenity }}</span>
-          </div>
-          
-          <div class="hotel-info">
-            <span>Check-in: {{ hotel.checkInTime }}</span>
-            <span>Check-out: {{ hotel.checkOutTime }}</span>
-            <span *ngIf="authService.isAdmin()" [class.active]="hotel.active" [class.inactive]="!hotel.active">
-              {{ hotel.active ? 'Active' : 'Inactive' }}
-            </span>
+            <span *ngFor="let amenity of hotel.amenities?.slice(0, 4)" class="amenity-badge">{{ amenity }}</span>
+            <span *ngIf="hotel.amenities?.length > 4" class="amenity-badge more">+{{ hotel.amenities.length - 4 }} more</span>
           </div>
         </div>
         
         <div class="hotel-actions">
-          <button (click)="viewDetails(hotel.id)" class="btn btn-primary">View Rooms</button>
-          <button *ngIf="authService.isAdmin()" (click)="editHotel(hotel.id)" class="btn btn-secondary">Edit</button>
-          <button *ngIf="authService.isAdmin()" (click)="toggleActive(hotel)" class="btn btn-warning">
-            {{ hotel.active ? 'Deactivate' : 'Activate' }}
-          </button>
-          <button *ngIf="authService.isAdmin()" (click)="deleteHotel(hotel)" class="btn btn-danger">Delete</button>
+          <button (click)="viewDetails(hotel.id)" class="btn btn-primary">View Rooms & Book</button>
         </div>
       </div>
     </div>
@@ -117,8 +102,7 @@
     <div *ngIf="!loading && filteredHotels.length === 0" class="empty-state">
       <h3>No Hotels Found</h3>
       <p *ngIf="hasSearchParams()">Try adjusting your search filters</p>
-      <p *ngIf="!hasSearchParams() && authService.isAdmin()">Get started by adding your first hotel</p>
-      <p *ngIf="!hasSearchParams() && !authService.isAdmin()">No hotels available at the moment</p>
+      <p *ngIf="!hasSearchParams()">No hotels available at the moment</p>
     </div>
   </div>
 </div>

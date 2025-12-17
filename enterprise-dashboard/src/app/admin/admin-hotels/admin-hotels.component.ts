@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { HotelsService } from '../../services/hotels.service';
+import { HotelService } from '../../services/hotel.service';
 
 @Component({
   selector: 'app-admin-hotels',
@@ -14,6 +14,21 @@ export class AdminHotelsComponent implements OnInit {
   isLoading = false;
   
   newHotel = {
+    name: '',
+    description: '',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    country: 'USA',
+    phone: '',
+    email: '',
+    rating: 4.0,
+    amenities: [] as string[],
+    images: [] as string[]
+  };
+
+  editHotel: any = {
     name: '',
     description: '',
     address: '',
@@ -43,7 +58,7 @@ export class AdminHotelsComponent implements OnInit {
     '🐕 Pet Friendly'
   ];
 
-  constructor(private hotelsService: HotelsService) {}
+  constructor(private hotelService: HotelService) {}
 
   ngOnInit(): void {
     this.loadHotels();
@@ -51,7 +66,7 @@ export class AdminHotelsComponent implements OnInit {
 
   loadHotels() {
     this.isLoading = true;
-    this.hotelsService.list().subscribe({
+    this.hotelService.getAllHotels().subscribe({
       next: (response) => {
         this.hotels = response || [];
         this.isLoading = false;
@@ -74,13 +89,30 @@ export class AdminHotelsComponent implements OnInit {
   }
 
   openEditModal(hotel: any) {
-    this.selectedHotel = { ...hotel };
+    this.editHotel = { 
+      ...hotel,
+      amenities: hotel.amenities ? [...hotel.amenities] : [],
+      images: hotel.images ? [...hotel.images] : []
+    };
     this.showEditModal = true;
   }
 
   closeEditModal() {
     this.showEditModal = false;
-    this.selectedHotel = null;
+    this.editHotel = {
+      name: '',
+      description: '',
+      address: '',
+      city: '',
+      state: '',
+      zipCode: '',
+      country: 'USA',
+      phone: '',
+      email: '',
+      rating: 4.0,
+      amenities: [],
+      images: []
+    };
   }
 
   toggleAmenity(amenity: string) {
@@ -92,8 +124,24 @@ export class AdminHotelsComponent implements OnInit {
     }
   }
 
+  toggleEditAmenity(amenity: string) {
+    if (!this.editHotel.amenities) {
+      this.editHotel.amenities = [];
+    }
+    const index = this.editHotel.amenities.indexOf(amenity);
+    if (index > -1) {
+      this.editHotel.amenities.splice(index, 1);
+    } else {
+      this.editHotel.amenities.push(amenity);
+    }
+  }
+
   isAmenitySelected(amenity: string): boolean {
     return this.newHotel.amenities.includes(amenity);
+  }
+
+  isEditAmenitySelected(amenity: string): boolean {
+    return this.editHotel.amenities?.includes(amenity) || false;
   }
 
   addHotel() {
@@ -102,7 +150,7 @@ export class AdminHotelsComponent implements OnInit {
     }
 
     this.isLoading = true;
-    this.hotelsService.add(this.newHotel).subscribe({
+    this.hotelService.createHotel(this.newHotel as any).subscribe({
       next: (response) => {
         this.isLoading = false;
         this.closeAddModal();
@@ -116,10 +164,41 @@ export class AdminHotelsComponent implements OnInit {
     });
   }
 
+  updateHotel() {
+    if (!this.editHotel.name || !this.editHotel.city || !this.editHotel.address) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    this.isLoading = true;
+    this.hotelService.updateHotel(this.editHotel.id, this.editHotel).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        this.closeEditModal();
+        this.loadHotels();
+        alert('Hotel updated successfully!');
+      },
+      error: (error) => {
+        this.isLoading = false;
+        alert('Failed to update hotel: ' + (error.error?.error || error.message));
+      }
+    });
+  }
+
   deleteHotel(hotel: any) {
-    if (confirm(`Are you sure you want to delete ${hotel.name}?`)) {
-      // TODO: Implement delete API call
-      alert('Delete functionality to be implemented');
+    if (confirm(`Are you sure you want to delete "${hotel.name}"? This action cannot be undone.`)) {
+      this.isLoading = true;
+      this.hotelService.deleteHotel(hotel.id).subscribe({
+        next: () => {
+          this.isLoading = false;
+          this.loadHotels();
+          alert('Hotel deleted successfully!');
+        },
+        error: (error) => {
+          this.isLoading = false;
+          alert('Failed to delete hotel: ' + (error.error?.error || error.message));
+        }
+      });
     }
   }
 
@@ -129,6 +208,25 @@ export class AdminHotelsComponent implements OnInit {
       return false;
     }
     return true;
+  }
+
+  toggleHotelStatus(hotel: any) {
+    const action = hotel.active ? 'deactivate' : 'activate';
+    if (!confirm(`Are you sure you want to ${action} "${hotel.name}"?`)) return;
+
+    this.isLoading = true;
+    const toggleFn = hotel.active ? this.hotelService.deactivateHotel(hotel.id) : this.hotelService.activateHotel(hotel.id);
+    toggleFn.subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        this.loadHotels();
+        alert(`Hotel ${action}d successfully!`);
+      },
+      error: (error) => {
+        this.isLoading = false;
+        alert(`Failed to ${action} hotel: ` + (error.error?.error || error.message));
+      }
+    });
   }
 
   resetForm() {

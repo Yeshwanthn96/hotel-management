@@ -7,8 +7,9 @@ import { BookingDetailsComponent } from './booking-details/booking-details.compo
 import { BookingReviewComponent } from './booking-review/booking-review.component';
 
 const routes: Routes = [
-  { path: '', component: UserBookingsComponent }, // User's own bookings
+  { path: '', component: BookingsListComponent }, // Shows all bookings for admin, own bookings for users
   { path: 'my-bookings', component: UserBookingsComponent },
+  { path: 'all', component: BookingsListComponent }, // Admin: all bookings management
   { path: 'add', component: BookingsAddComponent },
   { path: 'details/:id', component: BookingDetailsComponent },
   { path: 'review/:id', component: BookingReviewComponent } // Write review for completed booking

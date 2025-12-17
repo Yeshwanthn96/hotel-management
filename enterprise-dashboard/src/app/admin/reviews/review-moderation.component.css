@@ -641,3 +641,150 @@
     flex-wrap: wrap;
   }
 }
+
+/* New Card Layout Styles */
+.subtitle {
+  font-size: 14px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.review-title-section {
+  flex: 1;
+}
+
+.review-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 4px 0;
+}
+
+.hotel-info {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
+.user-info-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 12px;
+}
+
+.user-label {
+  font-size: 13px;
+  color: #888;
+}
+
+.user-name {
+  font-weight: 600;
+  color: #333;
+}
+
+.user-email {
+  font-size: 12px;
+  color: #888;
+}
+
+.review-badges {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0;
+  flex-wrap: wrap;
+}
+
+.verified-badge {
+  background: #d4edda;
+  color: #155724;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.admin-reply-display {
+  background: #f8f9fa;
+  border-left: 3px solid #4F46E5;
+  padding: 12px;
+  margin: 12px 0;
+  border-radius: 0 8px 8px 0;
+}
+
+.admin-reply-display .reply-header {
+  color: #4F46E5;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.admin-reply-display .reply-text {
+  color: #333;
+  font-size: 14px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.review-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.btn-sm.btn-primary {
+  background: #4F46E5;
+  color: white;
+}
+
+.btn-sm.btn-primary:hover {
+  background: #4338CA;
+}
+
+.btn-sm.btn-success {
+  background: #28a745;
+  color: white;
+}
+
+.btn-sm.btn-success:hover {
+  background: #218838;
+}
+
+.btn-sm.btn-warning {
+  background: #ffc107;
+  color: #333;
+}
+
+.btn-sm.btn-warning:hover {
+  background: #e0a800;
+}
+
+.btn-sm.btn-danger {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-sm.btn-danger:hover {
+  background: #c82333;
+}
+
+.star.empty {
+  color: #ddd;
+}
+
+.star.filled {
+  color: #f59e0b;
+}
